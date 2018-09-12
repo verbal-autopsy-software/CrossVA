@@ -1,4 +1,5 @@
-# CrossVA
+# CrossVA  [![Travis-CI Build Status](https://travis-ci.org/verbal-autopsy-software/CrossVA.svg?branch=master)](https://travis-ci.org/verbal-autopsy-software/CrossVA)
+
 
 ## **Description** 	
 
