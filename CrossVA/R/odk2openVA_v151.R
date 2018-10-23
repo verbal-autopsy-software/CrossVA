@@ -1,21 +1,22 @@
 #' Map VA records (version 1.5.1) to InterVA5 & InSilico (with option data.type = "WHO2016").
 #'
-#' \code{odk2openVA_v151} transform data collected with the 2016 WHO VA instrument (version 1.5.1)
-#'   to serve different InterVA5 and InSilicoVA alogrithms for coding cause of death.
+#' \code{odk2openVA_v151} transforms data collected with the 2016 WHO VA
+#'   instrument (version 1.5.1) to serve as the input for the InterVA5
+#'   and InSilicoVA alogrithms for coding cause of death.
 #'
-#' @param odk A dataframe, obtained from reading an ODKBriefcase
+#' @param odk A dataframe, obtained from reading an ODK Briefcase
 #'   export of records collected with the WHO questionnaire.
 #'
 #' @examples
 #' \dontrun{
-#' record_f_name <- system.file('sample', 'who151_va_output.csv', package = 'CrossVA')
+#' record_f_name <- system.file("sample", "who151_va_output.csv", package = "CrossVA")
 #' records <- read.csv(record_f_name)
 #' output_data_IV5 <- odk2openVA_v151(records)
 #' }
 #'
 #' @export
 #'
-odk2openVA_v151<- function(odk){
+odk2openVA_v151 <- function(odk){
 
     ## Input Data
     odkNames <- tolower(names(odk))
