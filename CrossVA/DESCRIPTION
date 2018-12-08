@@ -23,3 +23,7 @@ Authors@R: c(
   person("Zehang", "Li", role = "aut")
   )
 Encoding: UTF-8
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
