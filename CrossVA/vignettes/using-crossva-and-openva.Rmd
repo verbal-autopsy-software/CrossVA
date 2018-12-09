@@ -19,27 +19,36 @@ library(CrossVA)
 library(openVA)
 ```
 
-This vignette provides several examples of preparing verbal autopsy (VA) data using CrossVA and then assigning
-a cause of death (CoD) using openVA.  CrossVA is designed to work with VA data collected using a questionnare
-with the same format as the 2016 VA instruments developed by the World Health Organization (WHO) -- 
-versions 1.4.1 and 1.5.1 of the 2016 WHO VA instrument are currently supported.  CrossVA also includes tools for
-converting data from the 2016 questionnaire into the format of the 2012 questionnaire -- this functionality
-creates inputs for the InterVA4 algorithm and the original InSilicoVA algorithm.
+This vignette provides several examples of preparing verbal autopsy (VA) data
+using the CrossVA function `odk2openVA` and then assigning a cause of death (CoD)
+using openVA.  CrossVA is designed to work with VA data collected using a
+questionnare with the same format as the 2016 VA instruments developed by the
+World Health Organization (WHO) -- versions 1.4.1 and 1.5.1 of the 2016 WHO VA
+instrument are currently supported.    
+
+CrossVA also includes tools for converting data from the 2016 questionnaire into
+the format of the 2012 questionnaire, e.g., `map_records`.  These functions
+create inputs for older versions of the InterVA and InSilicoVA algorithms and,
+thus, are excluded from this vignette.  We recommend using `odk2openVA` as well
+as the newest versions of the InSilicoVA and InterVA algorithms.
 
 # Example R Sessions
 
 CrossVA has two sets of functions: 
 
-1. `map_records` -- convert 2016 into 2012 format to work with insilico(data.type = "WHO2012") and InterVA4
-1. `odk2openVA` -- convert 2016 form to work with insilico(data.type = "WHO2016") and InterVA5
+1. `map_records` -- convert 2016 into 2012 format to work with
+   insilico(data.type = "WHO2012") and InterVA4
+1. `odk2openVA` -- convert 2016 form to work with insilico(data.type =
+   "WHO2016") and InterVA5
 
-and both sets of function accept comma-separated-values (CSV) files as inputs, which were created with
+and both sets of function accept comma-separated-values (CSV) files as inputs,
+which were created with
 the Open Data Kit Briefcase program.    
 
 
-Before we load our data and assign CoD, we need to know the path of the folder that contains the data.
-Sometimes it is useful to change R's current working directory to the folder where the data files is
-located:
+Before we load our data and assign CoD, we need to know the path of the folder
+that contains the data.  Sometimes it is useful to change R's current working
+directory to the folder where the data files is located:
 
 ```{r setCWD, eval = FALSE}
 # Print the current working directory
@@ -61,13 +70,14 @@ dir()
 odkexport <- read.csv("vaData_2016.csv", stringsAsFactors = FALSE)
 ```
 
-If you prefer to keep your data in one folder and your R code in another directory, it is possible
-to use the path to the CSV data file exported by ODK Briefcase -- this is used below with the example
-data file who151_va_output.csv.
+If you prefer to keep your data in one folder and your R code in another
+directory, it is possible to use the path to the CSV data file exported by ODK
+Briefcase -- this is used below with the example data file who151_va_output.csv.
 
 ## Analysis of 2016 WHO Verbal Autopsy Instrument
 
-Again, CrossVA currently supports version 1.5.1 and 1.4.1 of the 2016 WHO VA questionnaire.
+Again, CrossVA currently supports version 1.5.1 and 1.4.1 of the 2016 WHO VA
+questionnaire.
 
 ### Questionnaire version 1.5.1
 
@@ -78,24 +88,25 @@ library(openVA)
 
 # Load the CSV from ODK Briefcase (here we use the example data file from the CrossVA package)
 ## fileNames_v151 contains the path to the example data file
-fileName_v151 <- system.file("sample", "who151_va_output.csv", package = "CrossVA")
+fileName_v151 <- system.file("sample", "who151_odk_export.csv", package = "CrossVA")
 fileName_v151
 #> [1] "C:/Users/LeoMessi/R/win-library/3.5/CrossVA/sample/who151_va_output.csv"
 
 dir("C:/Users/LeoMessi/R/win-library/3.5/CrossVA/sample/")
-#> [1] "who151_va_output.csv"    "who_va_output.csv"
+#> [1] "who151_odk_export.csv"    "who141_odk_export.csv"    "who_va_output.csv"
 
 # Use the read.csv() function to load the data
 odkexport_2016_v151 <- read.csv(fileName_v151, stringsAsFactors = FALSE)
 ```
 
 ```{r silentLoadva151, include = FALSE}
-fileName_v151 <- system.file("sample", "who151_va_output.csv", package = "CrossVA")
+fileName_v151 <- system.file("sample", "who151_odk_export.csv", package = "CrossVA")
 odkexport_2016_v151 <- read.csv(fileName_v151, stringsAsFactors = FALSE)
 ```
 
-Now that the CSV file is loaded into R, we can use CrossVA's function `odk2openVA` to convert the CSV file
-into the proper  format (i.e., a data frame with 354 columns).
+Now that the CSV file is loaded into R, we can use CrossVA's function
+`odk2openVA` to convert the CSV file into the proper format (i.e., a data frame
+with 354 columns).
 
 ```{r runCrossVA}
 # Convert VAs using the odk2openVA() function
@@ -109,9 +120,11 @@ dim(openva_input_2016_v151)
 names(openva_input_2016_v151)
 ```
 
-Now that the VA records have been converted into the expected format, we can use the tools in the openVA package to
-analyze the data.  There are separate functions for each algorithm: `InterVA`, `InterVA5`, and `insilico`.  For your
-convenience, openVA also includes a wrapper function, `codeVA`, which call any of these algorithms to assign CoD.
+Now that the VA records have been converted into the expected format, we can use
+the tools in the openVA package to analyze the data.  There are separate
+functions for each algorithm: `InterVA`, `InterVA5`, and `insilico`.  For your
+convenience, openVA also includes a wrapper function, `codeVA`, which call any
+of these algorithms to assign CoD.
 
 ```{r InterVA5}
 # InterVA5
@@ -132,10 +145,12 @@ run1 <- InterVA5(openva_input_2016_v151,
 ##                directory = getwd())
 ```
 
-By default the parameter `write = TRUE`, which requires that we pass an argument to `directory` -- the folder where the
-log file is created.  The log file includes information about the VA records that are excluded from the analysis (usually
-because they have a missing value for age and/or sex) as well as any changes made to ensure the indicators are consistent
-with each other.  We can use the following commands to summarize the results.
+By default the parameter `write = TRUE`, which requires that we pass an argument
+to `directory` -- the folder where the log file is created.  The log file
+includes information about the VA records that are excluded from the analysis
+(usually because they have a missing value for age and/or sex) as well as any
+changes made to ensure the indicators are consistent with each other.  We can
+use the following commands to summarize the results.
 
 ```{r InterVA5-summary}
 # List the top 5 causes in the Cause-Specific Mortality Fraction (CSMF)
@@ -175,7 +190,7 @@ plotVA(run2)
 # If you have not run the previous code, make sure you have loaded the packages
 # library(CrossVA)
 # library(openVA)
-fileName_v141 <- system.file("sample", "who_va_output.csv", package = "CrossVA")
+fileName_v141 <- system.file("sample", "who141_odk_export.csv", package = "CrossVA")
 odkexport_2016_v141 <- read.csv(fileName_v141, stringsAsFactors = FALSE)
 
 # Convert VAs using the odk2openVA() function for version 1.4.1
@@ -205,36 +220,4 @@ run4 <- codeVA(openva_input_2016_v141,
 ## Summarize InSilicoVA results
 summary(run4)
 PlotVA(run4)
-```
-
-## Convert 2016 WHO Verbal Autopsy Instrument to 2012 Format
-
-Only works for version 1.4.1.
-
-```{r Format2012}
-# Use CrossVA's map_records function to format data for InSilico 
-openva_input2012_insilico <- map_records(odkexport_2016_v141, 'insilicova')
-
-# Use InsilicoVA algorithm to assign CoD
-run5 <- codeVA(openva_input_2012_insilico,
-               data.type = "WHO2012",
-               model = "InSilico")
-
-# Summarize InSilicoVA results
-summary(run5)
-plotVA((run5)
-
-# Use CrossVA's map_records function to format data for InterVA4
-openva_input2012_interva <- map_records(odkexport_2016_v141, 'interva4')
-
-# Use InterVA4 algorithm to assign CoD
-run6 <- codeVA(openva_input_2012_insilico,
-               data.type = "WHO2012",
-               model = "InterVA",
-               version = "4.02")
-
-# Summarize InterVA4 results
-summary(run6)
-plotVA(run6)
-
 ```

@@ -9,9 +9,9 @@
 #'
 #' @examples
 #' \dontrun{
-#' record_f_name <- system.file("sample", "who_va_output.csv", package = "CrossVA")
+#' record_f_name <- system.file("sample", "who141_odk_export.csv", package = "CrossVA")
 #' records <- read.csv(record_f_name, stringsAsFactors = FALSE)
-#' output_data_IV5 <- odk2openVA_v141(records)
+#' output <- odk2openVA_v141(records)
 #' }
 #'
 #' @export
@@ -123,28 +123,30 @@ odk2openVA_v141 <- function(odk){
 
 	iv5Out <- matrix(".", nrow=nrow(odk), ncol=353)
 
-        ## function for creating simple Y/N indicators
-	qYesNo <- c(20:40, 42, 44:51, 54:74, 78, 81:82, 85:89, 92, 95, 98:100,
-		## 102:103, 106, 110:122, 127, 131, 134:135, 138, 140:143, 145:148,
-		102:103, 106, 112:116, 118:122, 127, 131, 134:135, 138, 140, 142:143, 145:148,
-		151:160, 162, 169:180, 182, 184:192, 200, 204:205, 207:213, 215:223,
-		## 225:238, 240:251, 254:265, 267:270, 274:280, 282, 288:292, 296:303,
-		225:238, 240:242, 244:251, 254:265, 267:270, 274:280, 282, 288:292, 296:303,
-		305:306, 308:312, 315:330, 333:353)
-
-	tmpMat <- matrix(sapply(whoNames[qYesNo], stri_detect_fixed, str = odkNames), nrow = length(odkNames))
+        # check for missing indicators
+	tmpMat <- matrix(sapply(whoNames, stri_detect_fixed, str = odkNames), nrow = length(odkNames))
 	indexData <- apply(tmpMat, 2, which)
         warnZeroMatch <- which(sapply(indexData, length) == 0)
         if (length(warnZeroMatch) > 0) {
           warning("Problem with data", call. = FALSE)
           cat(
               paste("Expecting indicator(s) with name(s): ",
-                    whoNames[qYesNo[warnZeroMatch]],
+                    whoNames[warnZeroMatch],
                     sep = ""),
               sep = "\n"
           )
           stop("Please add above columns to your data frame")
         }
+
+        # function for creating simple Y/N indicators
+	qYesNo <- c(20:40, 42, 44:51, 54:74, 78, 81:82, 85:89, 92, 95, 98:100,
+		102:103, 106, 112:116, 118:122, 127, 131, 134:135, 138, 140, 142:143, 145:148,
+		151:160, 162, 169:180, 182, 184:192, 200, 204:205, 207:213, 215:223,
+		225:238, 240:242, 244:251, 254:265, 267:270, 274:280, 282, 288:292, 296:303,
+		305:306, 308:312, 315:330, 333:353)
+
+	tmpMat <- matrix(sapply(whoNames[qYesNo], stri_detect_fixed, str = odkNames), nrow = length(odkNames))
+	indexData <- apply(tmpMat, 2, which)
         iv5Out[ , qYesNo] <- as.matrix(odk[ , indexData])
         iv5Out[iv5Out=="yes"] <- "y"
         iv5Out[iv5Out=="no"] <- "n"
@@ -251,14 +253,17 @@ odk2openVA_v141 <- function(odk){
 	#16) Was she a woman aged 12-19 years at death? f-19
 	iv5Out[ , 16] <- ifelse(odk[ , indexData_sex]=="female" & odk[ , indexData1y]< 19 & odk[ , indexData1y]>= 12, "y", ".")
 	iv5Out[odk[ , indexData_sex]=="female" & is.na(odk[ , indexData1y]) & odk[ , indexData2]=="adult" & odk[ , indexData3]< 19 & odk[ , indexData3]>=12, 16] <- "y"
+        iv5Out[odk[ , indexData2]=="neonate", 16] <- "n"
 
 	#17) Was she a woman aged 20-34 years at death? f20-34
 	iv5Out[ , 17] <- ifelse(odk[ , indexData_sex]=="female" & odk[ , indexData1y]< 35 & odk[ , indexData1y]>= 20, "y", ".")
 	iv5Out[odk[ , indexData_sex]=="female" & is.na(odk[ , indexData1y]) & odk[ , indexData2]=="adult" & odk[ , indexData3]< 35 & odk[ , indexData3]>=20, 17] <- "y"
+        iv5Out[odk[ , indexData2]=="neonate", 17] <- "n"
 
 	#18) Was she a woman aged 35 to 49 years at death? f35-49
 	iv5Out[ , 18] <- ifelse(odk[ , indexData_sex]=="female" & odk[ , indexData1y]< 50 & odk[ , indexData1y]>= 35, "y", ".")
 	iv5Out[odk[ , indexData_sex]=="female" & is.na(odk[ , indexData1y]) & odk[ , indexData2]=="adult" & odk[ , indexData3]< 50 & odk[ , indexData3]>=35, 18] <- "y"
+        iv5Out[odk[ , indexData2]=="neonate", 18] <- "n"
 
 	#19) Was she married at the time of death? married
 	indexData <- which(stri_endswith_fixed(odkNames, whoNames[19]))
