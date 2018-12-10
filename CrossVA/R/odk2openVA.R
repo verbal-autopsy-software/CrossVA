@@ -13,7 +13,6 @@
 #'     data.
 #'
 #' @examples
-#' \dontrun{
 #' ## Example with 2016 WHO VA instrument version 1.5.1
 #' record_f_name151 <- system.file("sample", "who151_odk_export.csv", package = "CrossVA")
 #' records151 <- read.csv(record_f_name151, stringsAsFactors = FALSE)
@@ -22,8 +21,7 @@
 #' ## Example with 2016 WHO VA instrument version 1.4.1
 #' record_f_name141 <- system.file("sample", "who141_odk_export.csv", package = "CrossVA")
 #' records141 <- read.csv(record_f_name141, stringsAsFactors = FALSE)
-#' output141 <- odk2openVA(records, version = "1.4.1")
-#' }
+#' output141 <- odk2openVA(records141, version = "1.4.1")
 #'
 #' @export
 #'
