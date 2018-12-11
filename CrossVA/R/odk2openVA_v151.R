@@ -820,7 +820,7 @@ odk2openVA_v151 <- function(odk){
     if (length(indexNA) > 0) {
         cat(
             paste("Warning: odk2openVA produced NA's in the following columns",
-                  "(this may cause errors with openVA)",
+                  " (this may cause errors with openVA)",
                   sep = ""),
             sep = "\n"
             )
@@ -840,5 +840,5 @@ odk2openVA_v151 <- function(odk){
     colnames(iv5Out) <- c("ID", iv5Names)
 
     # That's all folks!
-    return(as.data.frame(iv5Out))
+    return(as.data.frame(iv5Out, stringsAsFactors = FALSE))
 }

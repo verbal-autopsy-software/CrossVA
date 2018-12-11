@@ -813,7 +813,7 @@ odk2openVA_v141 <- function(odk){
     if (length(indexNA) > 0) {
         cat(
             paste("Warning: odk2openVA produced NA's in the following columns",
-                  "(this may cause errors with openVA)",
+                  " (this may cause errors with openVA)",
                   sep = ""),
             sep = "\n"
             )
