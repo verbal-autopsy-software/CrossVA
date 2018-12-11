@@ -161,8 +161,6 @@ odk2openVA_v151 <- function(odk){
     iv5Out[iv5Out=="no"] <- "n"
     iv5Out[iv5Out=="dk"] <- "."
     iv5Out[iv5Out=="ref"] <- "."
-    iv5Out[iv5Out==""] <- "."
-    iv5Out[is.na(iv5Out)] <- "."
 
     # Step through iv5 indicators to create new values
     #1) Did s(he) die during the wet season? d wet & 2) Did s(he) die during the dry season? d dry
@@ -816,11 +814,31 @@ odk2openVA_v151 <- function(odk){
     iv5Out[odk[ , indexData]>=10, 332] <- "y"
     iv5Out[odk[ , indexData]< 10, 332] <- "n"
 
+    # check for NAs
+    numNA <- colSums(is.na(iv5Out))
+    indexNA <- which(numNA > 0)
+    if (length(indexNA) > 0) {
+        cat(
+            paste("Warning: odk2openVA produced NA's in the following columns",
+                  "(this may cause errors with openVA)",
+                  sep = ""),
+            sep = "\n"
+            )
+        cat(
+            paste(iv5Names[indexNA], ## subtract 1 since ID is omitted
+                  " Probably associated with WHO column containing: ",
+                  whoNames[indexNA], ## subtract 1 since ID is omitted
+                  sep = ""),
+            sep = "\n"
+        )
+    }
+
     # Add IDD as first column
     iv5Out <- cbind(as.character(odk$meta.instanceID), iv5Out)
 
     # Attach column names
     colnames(iv5Out) <- c("ID", iv5Names)
 
+    # That's all folks!
     return(as.data.frame(iv5Out))
 }
