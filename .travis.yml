@@ -2,12 +2,12 @@
 
 language: R
 sudo: false
-cache: packages
+#cache: packages
 notifications:
   email: false
 
 before_install:
-- Rscript -e 'update.packages(ask = FALSE)'
+##- Rscript -e 'update.packages(ask = FALSE)'
 - cd CrossVA
 
 
