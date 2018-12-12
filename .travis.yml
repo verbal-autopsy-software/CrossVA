@@ -10,9 +10,9 @@ before_install:
 ##- Rscript -e 'update.packages(ask = FALSE)'
 - cd CrossVA
 
-
-matrix:
-  include:
-  - r: devel
-  - r: release
-    r_github_packages: verbal-autopsy-software/InSilicoVA/InSilicoVA
+r_github_packages: verbal-autopsy-software/InSilicoVA/InSilicoVA
+##matrix:
+##  include:
+##  - r: devel
+##  - r: release
+##    r_github_packages: verbal-autopsy-software/InSilicoVA/InSilicoVA
