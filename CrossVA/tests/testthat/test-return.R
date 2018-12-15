@@ -1,8 +1,6 @@
 # Test that the odk2openVA returns a data frame of the appropriate size
 # with no factors (which may cause problems with openVA).
 
-## need to include tests for faulty data.
-
 context("Test return object.")
 
 test_that("odk2openVA_v151 returns data frame with the right characteristics", {
