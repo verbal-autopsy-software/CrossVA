@@ -206,6 +206,9 @@ odk2openVA_v151 <- function(odk){
     #5) Was s(he) aged 65 years or more at death? 65+
     iv5Out[odk[ , indexData1y]>=65, 5] <- "y"
     iv5Out[is.na(odk[ , indexData1y]) & odk[ , indexData2]=="adult" & odk[ , indexData3]>=65, 5] <- "y"
+    checkNumeric <- tryCatch(as.numeric(odk[ , indexData1y]),
+                             warning = function(w) return(-9999))
+    if(sum(checkNumeric, na.rm = TRUE) < 0) iv5Out[, 5] <- NA
 
     #6) Was s(he) aged 50 to 64 years at death? 50 to 64
     iv5Out[odk[ , indexData1y]< 65 & odk[ , indexData1y]>=50, 6] <- "y"
@@ -257,7 +260,8 @@ odk2openVA_v151 <- function(odk){
     # Finish coding age (5-15) -- if only one age has "y", recode all others to "n"
     ## e.g., if age 65 == "y", then age 50-64 == "n" and age 15-49 == "n" etc.
     indexData6 <-iv5Out[ , 5:15] != "y"            ## identify elements in age columns that do not equal "y"
-    indexData7 <- rowSums(iv5Out[ , 5:15] == "y")  ## identify with rows/records only have 1 "y" for all age columns
+    ##indexData7 <- rowSums(iv5Out[ , 5:15] == "y")  ## identify with rows/records only have 1 "y" for all age columns
+    indexData7 <- rowSums(iv5Out[ , 5:15] == "y", na.rm = TRUE)
     ## Now recode all "n"
     iv5Out[indexData7 == 1, 5:15][ indexData6[indexData7 == 1, ] ] <- "n"
 
