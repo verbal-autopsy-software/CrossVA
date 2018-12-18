@@ -13,7 +13,7 @@ test_that("odk2openVA produces errors with faulty input data.", {
 
     badRecords <- records151[, -4] ## take out ID10004 (wet/dry season)
 
-    expect_error(odk2openVA(badRecords, "1.5.1"),
+    expect_error(odk2openVA(badRecords),
                  "Problem with data: please add above columns to your data frame")
 
     ## version 1.4.1
@@ -24,7 +24,7 @@ test_that("odk2openVA produces errors with faulty input data.", {
 
     badRecords <- records141[, -4] ## take out ID10004 (wet/dry season)
 
-    expect_error(odk2openVA(badRecords, "1.4.1"),
+    expect_error(odk2openVA(badRecords),
                  "Problem with data: please add above columns to your data frame")
 
 })

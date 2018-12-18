@@ -2,7 +2,7 @@ Package: CrossVA
 Type: Package
 Title: Verbal Autopsy Data Transform for Use with Various Coding
         Algorithms
-Version: 0.9.4
+Version: 0.9.5
 Description: Enables transformation of Verbal Autopsy data collected with the WHO 2016 questionnaire (versions 1.4.1 & 1.5.1)
   for automated coding of Cause of Death using different computer algorithms. Currently supports user-supplied mappings, and
   provides unvalidated, experimental-stage mapping definitions to transform to InterVA4, InterVA5, Tariff 2, and InSilicoVA.
