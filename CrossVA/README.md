@@ -30,7 +30,8 @@ A CSV file intended for processing by a coding algorithm.
 
 **Status**		
 
-Initial, not intended for production use
+- `odk2openVA` is actively supported, with additional functionality for the PHMRC questionnaire under developement.
+- `map_records` is still included, but not actively maintained (or debugged).
 
 **Testing**
 
