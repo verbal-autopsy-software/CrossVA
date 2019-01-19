@@ -273,6 +273,11 @@ odk2openVA_v141 <- function(odk){
     iv5Out[odk[ , indexData_sex]=="female" & is.na(odk[ , indexData1y]) & odk[ , indexData2]=="adult" & odk[ , indexData3]< 12, 16] <- "n"
     iv5Out[odk[ , indexData_sex]=="female" & is.na(odk[ , indexData1y]) & odk[ , indexData2]=="adult" & odk[ , indexData3]> 19, 16] <- "n"
     iv5Out[odk[ , indexData2]=="neonate", 16] <- "n"
+    iv5Out[odk[ , indexData_isNeonatal] == 1, 16] <- "n"
+    iv5Out[odk[ , indexData_isChild] == 1 & odk[ , indexData1y] < 12, 16] <- "n"
+    iv5Out[odk[ , indexData_isChild] == 1 & odk[ , indexData4y] < 12, 16] <- "n"
+    iv5Out[odk[ , indexData_isChild] == 1 & odk[ , indexData4m] < 12*12, 16] <- "n"
+    iv5Out[odk[ , indexData_isChild] == 1 & odk[ , indexData4d] < 12*365.25, 16] <- "n"
     iv5Out[odk[ , indexData_sex]=="male", 16] <- "n"
 
     #17) Was she a woman aged 20-34 years at death? f20-34
@@ -285,6 +290,8 @@ odk2openVA_v141 <- function(odk){
     iv5Out[odk[ , indexData_sex]=="female" & is.na(odk[ , indexData1y]) & odk[ , indexData2]=="adult" & odk[ , indexData3]> 34, 17] <- "n"
 
     iv5Out[odk[ , indexData2]=="neonate", 17] <- "n"
+    iv5Out[odk[ , indexData_isNeonatal] == 1, 17] <- "n"
+    iv5Out[odk[ , indexData_isChild] == 1, 17] <- "n"
     iv5Out[odk[ , indexData_sex]=="male", 17] <- "n"
 
     #18) Was she a woman aged 35 to 49 years at death? f35-49
@@ -297,8 +304,9 @@ odk2openVA_v141 <- function(odk){
     iv5Out[odk[ , indexData_sex]=="female" & is.na(odk[ , indexData1y]) & odk[ , indexData2]=="adult" & odk[ , indexData3]> 49, 18] <- "n"
 
     iv5Out[odk[ , indexData2]=="neonate", 18] <- "n"
+    iv5Out[odk[ , indexData_isNeonatal] == 1, 18] <- "n"
+    iv5Out[odk[ , indexData_isChild] == 1, 18] <- "n"
     iv5Out[odk[ , indexData_sex]=="male", 18] <- "n"
-
 
     #19) Was she married at the time of death? married
     indexData <- which(stri_endswith_fixed(odkNames, whoNames[19]))
