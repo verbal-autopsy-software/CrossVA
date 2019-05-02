@@ -251,11 +251,11 @@ odk2openVA_v151 <- function(odk){
     iv5Out[odk[ , indexData2]=="neonate" & !is.na(odk[ , indexData5d]) & ageNeonate< 2 & ageNeonate>=1, 13] <- "y"
 
     #14)  Was s(he) a baby who died more than 48 hours from birth, but within the first week? day2-6 iv5Names[14]
-    iv5Out[odk[ , indexData1d]>2 & odk[ , indexData1d]< 7, 13] <- "y"
+    iv5Out[odk[ , indexData1d]>2 & odk[ , indexData1d]< 7, 14] <- "y"
     iv5Out[odk[ , indexData2]=="neonate" & !is.na(odk[ , indexData5d]) & ageNeonate< 7 & ageNeonate>=2, 14] <- "y"
 
     #15) Was s(he) a baby who died after the first week, but within the first month? wk2-4 iv5Names[15]
-    iv5Out[odk[ , indexData1d]>=7 & odk[ , indexData1d]< 28, 13] <- "y"
+    iv5Out[odk[ , indexData1d]>=7 & odk[ , indexData1d]< 28, 15] <- "y"
     iv5Out[odk[ , indexData2]=="neonate" & !is.na(odk[ , indexData5d]) & ageNeonate< 28 & ageNeonate>=7, 15] <- "y"
 
     # Finish coding age (5-15) -- if only one age has "y", recode all others to "n"
