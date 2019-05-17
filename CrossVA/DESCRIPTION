@@ -13,9 +13,12 @@ RoxygenNote: 6.1.1
 Imports: stringi
 Packaged: 2019-04-19 17:52:26 UTC
 Authors@R: c(
+  person("Peter", "Byass", role = "aut"),
   person("Eungang", "Choi", role = "aut"),
   person("Sam", "Clark", role = "aut"),
   person("Zehang", "Li", role = "aut"),
+  person("Nicolas", "Maire", role = "aut"),
+  person("Tyler", "McCormick", role = "aut"),
   person("Jason", "Thomas", email = "jarathomas@gmail.com", role = c("aut", "cre"))
   )
 Encoding: UTF-8

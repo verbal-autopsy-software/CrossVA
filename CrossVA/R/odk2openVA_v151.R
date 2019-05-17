@@ -611,7 +611,7 @@ odk2openVA_v151 <- function(odk){
     indexData <- which(stri_endswith_fixed(odkNames, whoNames[166]))
     iv5Out[stri_endswith_fixed(tolower(odk[ , indexData]), "abdomen|trunk"),                166] <- "y"
     iv5Out[stri_endswith_fixed(tolower(odk[ , indexData]), negate = TRUE, "abdomen|trunk"), 166] <- "n"
-    iv5Out[tolower(odk[ , indexData])=="",                                                166] <- "."
+    iv5Out[tolower(odk[ , indexData])=="",                                                  166] <- "."
 
     #167) Did (s)he have a rash on the extremities?	sk ra ext
     indexData <- which(stri_endswith_fixed(odkNames, whoNames[167]))
@@ -623,7 +623,7 @@ odk2openVA_v151 <- function(odk){
     indexData <- which(stri_endswith_fixed(odkNames, whoNames[168]))
     iv5Out[stri_endswith_fixed(tolower(odk[ , indexData]), "everywhere"),                168] <- "y"
     iv5Out[stri_endswith_fixed(tolower(odk[ , indexData]), negate = TRUE, "everywhere"), 168] <- "n"
-    iv5Out[tolower(odk[ , indexData])=="",                                             168] <- "."
+    iv5Out[tolower(odk[ , indexData])=="",                                               168] <- "."
 
     #181) Did (s)he have puffiness of the face for at least one week before death?	sw p f 1+w
     indexData <- which(stri_endswith_fixed(odkNames, whoNames[181]))
@@ -803,7 +803,7 @@ odk2openVA_v151 <- function(odk){
 
     #295) Was the baby born before the eighth month (less than 34 weeks) of pregnancy?	gest 7m
     iv5Out[odk[ , indexData]>=8 & odk[ , indexData]< 88, 295] <- "n"
-    iv5Out[odk[ , indexData]< 8                         , 295] <- "y"
+    iv5Out[odk[ , indexData]< 8,                         295] <- "y"
 
     #304) Did labour and delivery take more than 24 hours?	lab 24+h
     indexData <- which(stri_endswith_fixed(odkNames, whoNames[304]))
