@@ -595,7 +595,8 @@ odk2openVA_v151 <- function(odk){
     iv5Out[odk[ , indexData190_b] >= 1 & tolower(odk[ , indexData190_units]) == "months", 117] <- "y"
 
     #123) Did (s)he have severe abdominal pain for less than 2 weeks before death? abd p <2w
-    indexData  <- which(stri_endswith_fixed(odkNames, whoNames[122]))
+    ##indexData  <- which(stri_endswith_fixed(odkNames, whoNames[122]))
+    indexData  <- which(stri_endswith_fixed(odkNames, "id10194")) ## changed from id195
     indexDatad <- which(stri_endswith_fixed(odkNames, "id10197_a"))
     indexDatah <- which(stri_endswith_fixed(odkNames, "id10196"))
     indexDatam <- which(stri_endswith_fixed(odkNames, "id10198"))
@@ -678,6 +679,7 @@ odk2openVA_v151 <- function(odk){
     iv5Out[tolower(odk[ , indexData])=="no",                                                       133] <- "n"
 
     #136) Did (s)he have a stiff neck for less than one week before death? st n <1w
+    indexData  <- which(stri_endswith_fixed(odkNames, "id10208"))
     indexDatad <- which(stri_endswith_fixed(odkNames, whoNames[136]))
     iv5Out[tolower(odk[ , indexData])=="yes" & odk[ , indexDatad]< 7, 136] <- "y"
     iv5Out[tolower(odk[ , indexData])=="yes" & odk[ , indexDatad]>=7, 136] <- "n"
