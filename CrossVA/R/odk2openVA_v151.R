@@ -493,14 +493,14 @@ odk2openVA_v151 <- function(odk){
     #83) Did the cough last less than 3 weeks before death? cou <3w
     indexData <- which(stri_endswith_fixed(odkNames, whoNames[82]))
     indexData_days <- which(stri_endswith_fixed(odkNames, whoNames[83]))
-    iv5Out[odk[ , indexData=="yes" & odk[ , indexData_days[1]]< 21, 83] <- "y"
-    iv5Out[odk[ , indexData=="yes" & odk[ , indexData_days[1]]>=21, 83] <- "n"
-    iv5Out[odk[ , indexData=="no", 83] <- "n"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days[1]]< 21, 83] <- "y"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days[1]]>=21, 83] <- "n"
+    iv5Out[odk[ , indexData]=="no", 83] <- "n"
 
     #84) Did the cough last at least 3 weeks before death? cou 3+w
-    iv5Out[odk[ , indexData=="yes" & odk[ , indexData_days[1]]>=21, 84] <- "y"
-    iv5Out[odk[ , indexData=="yes" & odk[ , indexData_days[1]]< 21, 84] <- "n"
-    iv5Out[odk[ , indexData=="no", 84] <- "n"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days[1]]>=21, 84] <- "y"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days[1]]< 21, 84] <- "n"
+    iv5Out[odk[ , indexData]=="no", 84] <- "n"
 
     #90) Did the difficult breathing last for at least 3 days before death? dif br 3d
     indexDatad <- which(stri_endswith_fixed(odkNames, whoNames[90]))
