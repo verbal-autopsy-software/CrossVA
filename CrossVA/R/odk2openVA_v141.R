@@ -15,7 +15,7 @@
 #' }
 #'
 #' @importFrom stringi stri_endswith_fixed
-#' 
+#'
 #' @export
 #'
 odk2openVA_v141 <- function(odk){
@@ -509,38 +509,51 @@ odk2openVA_v141 <- function(odk){
     #iv5Out[odk[ , indexDatam]<  1, 53] <- "y"
 
     #75) Did the fever last less than a week before death? fev <1w
-    indexData <- which(stri_endswith_fixed(odkNames, whoNames[75]))
-    iv5Out[odk[ , indexData]< 7, 75] <- "y"
-    iv5Out[odk[ , indexData]>=7, 75] <- "n"
+    indexData <- which(stri_endswith_fixed(odkNames, whoNames[74]))
+    indexData_days <- which(stri_endswith_fixed(odkNames, whoNames[75]))
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days]< 7, 75] <- "y"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days]>=7, 75] <- "n"
+    iv5Out[odk[ , indexData]=="no", 75] <- "n"
 
     #76) Did the fever last at least one week, but less than 2 weeks before death? fev 1-2w
-    iv5Out[odk[ , indexData]>= 7 & odk[ , indexData]< 14, 76] <- "y"
-    iv5Out[odk[ , indexData]<  7,                         76] <- "n"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days]<  7,                              76] <- "n"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days]>= 7 & odk[ , indexData_days]< 14, 76] <- "y"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days]>=14,                              76] <- "n"
+    iv5Out[odk[ , indexData]=="no", 76] <- "n"
 
     #77) Did the fever last at least 2 weeks before death? fev 2+w
-    iv5Out[odk[ , indexData]>= 14, 77] <- "y"
-    iv5Out[odk[ , indexData]<  14, 77] <- "n"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days]>= 14, 77] <- "y"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days]<  14, 77] <- "n"
+    iv5Out[odk[ , indexData]=="no", 77] <- "n"
+
+    #78) Did the fever continue until death
+    iv5Out[odk[ , indexData]=="no", 78] <- "n"
 
     #79) Was the fever severe? fev sev
-    indexData <- which(stri_endswith_fixed(odkNames, whoNames[79]))
-    iv5Out[tolower(odk[ , indexData])=="severe",   79] <- "y"
-    iv5Out[tolower(odk[ , indexData])=="mild",     79] <- "n"
-    iv5Out[tolower(odk[ , indexData])=="moderate", 79] <- "n"
+    indexData_sev <- which(stri_endswith_fixed(odkNames, whoNames[79]))
+    iv5Out[odk[ , indexData]=="yes" & tolower(odk[ , indexData_sev])=="severe",   79] <- "y"
+    iv5Out[odk[ , indexData]=="yes" & tolower(odk[ , indexData_sev])=="mild",     79] <- "n"
+    iv5Out[odk[ , indexData]=="yes" & tolower(odk[ , indexData_sev])=="moderate", 79] <- "n"
+    iv5Out[odk[ , indexData]=="no", 79] <- "n"
 
     #80) Was the fever continuous? fev cont
-    indexData <- which(stri_endswith_fixed(odkNames, whoNames[80]))
-    iv5Out[tolower(odk[ , indexData])=="continuous", 80] <- "y"
-    iv5Out[tolower(odk[ , indexData])=="nightly",    80] <- "n"
-    iv5Out[tolower(odk[ , indexData])=="on_and_off", 80] <- "n"
+    indexData_cont <- which(stri_endswith_fixed(odkNames, whoNames[80]))
+    iv5Out[odk[ , indexData]=="yes" & tolower(odk[ , indexData_cont])=="continuous", 80] <- "y"
+    iv5Out[odk[ , indexData]=="yes" & tolower(odk[ , indexData_cont])=="nightly",    80] <- "n"
+    iv5Out[odk[ , indexData]=="yes" & tolower(odk[ , indexData_cont])=="on_and_off", 80] <- "n"
+    iv5Out[odk[ , indexData]=="no", 80] <- "n"
 
     #83) Did the cough last less than 3 weeks before death? cou <3w
-    indexData <- which(stri_endswith_fixed(odkNames, whoNames[83]))
-    iv5Out[odk[ , indexData[1]]< 21, 83] <- "y"
-    iv5Out[odk[ , indexData[1]]>=21, 83] <- "n"
+    indexData <- which(stri_endswith_fixed(odkNames, whoNames[82]))
+    indexData_days <- which(stri_endswith_fixed(odkNames, whoNames[83]))
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days[1]]< 21, 83] <- "y"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days[1]]>=21, 83] <- "n"
+    iv5Out[odk[ , indexData]=="no", 83] <- "n"
 
     #84) Did the cough last at least 3 weeks before death? cou 3+w
-    iv5Out[odk[ , indexData[1]]>=21, 84] <- "y"
-    iv5Out[odk[ , indexData[1]]< 21, 84] <- "n"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days[1]]>=21, 84] <- "y"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days[1]]< 21, 84] <- "n"
+    iv5Out[odk[ , indexData]=="no", 84] <- "n"
 
     #90) Did the difficult breathing last for at least 3 days before death? dif br 3d
     indexDatad <- which(stri_endswith_fixed(odkNames, whoNames[90]))
@@ -739,14 +752,21 @@ odk2openVA_v141 <- function(odk){
     iv5Out[tolower(odk[ , indexData])=="no",                          139] <- "n"
 
     #141) Did (s)he have mental confusion for at least 3 months before death? menc 3+m
+    indexData <- which(stri_endswith_fixed(odkNames, whoNames[140]))
     indexDatad <- which(stri_endswith_fixed(odkNames, whoNames[141]))
-    iv5Out[odk[ , indexDatad]>=3, 141] <- "y"
-    iv5Out[odk[ , indexDatad]< 3, 141] <- "n"
+    iv5Out[tolower(odk[ , indexData])=="yes" & odk[ , indexDatad]>=3, 141] <- "y"
+    iv5Out[tolower(odk[ , indexData])=="yes" & odk[ , indexDatad]< 3, 141] <- "n"
+    iv5Out[tolower(odk[ , indexData])=="no", 141] <- "n"
+
+    #143) Was (s)he unsconscious for at least 24 hours before death?	unc 24+h
+    indexData <- which(stri_endswith_fixed(odkNames, whoNames[142]))
+    iv5Out[odk[ , indexData]=="no", 143] <- "n"
 
     #144) Was (s)he unsconscious for at least 6 hours before death?	unc 6+h
-    indexData <- which(stri_endswith_fixed(odkNames, whoNames[144]))
-    iv5Out[odk[ , indexData]>=6, 144] <- "y"
-    iv5Out[odk[ , indexData]< 6, 144] <- "n"
+    indexData <- which(stri_endswith_fixed(odkNames, whoNames[143]))
+    indexDatah <- which(stri_endswith_fixed(odkNames, whoNames[144]))
+    iv5Out[odk[ , indexDatah]>=6, 144] <- "y"
+    iv5Out[odk[ , indexDatah]< 6, 144] <- "n"
 
     #149) Did the convulsions last for less than 10 minutes?	conv <10m
     indexData <- which(stri_endswith_fixed(odkNames, whoNames[149]))
@@ -965,6 +985,7 @@ odk2openVA_v141 <- function(odk){
     indexData <- which(stri_endswith_fixed(odkNames, whoNames[293]))
     iv5Out[odk[ , indexData]>=9 & odk[ , indexData]< 88, 293] <- "y"
     iv5Out[odk[ , indexData]< 9,                         293] <- "n"
+    iv5Out[odk[ , indexData]==88, 293] <- "."
 
     #294) Was the baby born during the eighth month (34 to 37 weeks) of pregnancy?	gest 8m
     iv5Out[odk[ , indexData]> 8 & odk[ , indexData]< 88, 294] <- "n"
