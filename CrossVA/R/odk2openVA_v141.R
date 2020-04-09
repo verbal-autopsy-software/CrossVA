@@ -644,7 +644,7 @@ odk2openVA_v141 <- function(odk){
 
     #123) Did (s)he have severe abdominal pain for less than 2 weeks before death? abd p <2w
     ## indexData  <- which(stri_endswith_fixed(odkNames, whoNames[122]))
-    indexData <- which(stri_endswith_fixed(odkNames, "id10194"))
+    indexData <- which(stri_endswith_fixed(odkNames, "id10195"))
     indexDatad <- which(stri_endswith_fixed(odkNames, "id10197"))
     indexDatah <- which(stri_endswith_fixed(odkNames, "id10196"))
     indexDataw <- which(stri_endswith_fixed(odkNames, "id10197b"))
