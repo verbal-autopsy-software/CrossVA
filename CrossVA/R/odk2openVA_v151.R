@@ -7,6 +7,9 @@
 #' @param odk A dataframe, obtained from reading an ODK Briefcase
 #'   export of records collected with the WHO questionnaire.
 #'
+#' @param id_col A character string of the column name (in odk) with the
+#' unique ID for each death.
+#' 
 #' @examples
 #' \dontrun{
 #' record_f_name <- system.file("sample", "who151_odk_export.csv", package = "CrossVA")
@@ -18,7 +21,7 @@
 #'
 #' @export
 #'
-odk2openVA_v151 <- function(odk){
+odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
 
     ## Input Data
     odkNames <- tolower(names(odk))
@@ -1068,7 +1071,14 @@ odk2openVA_v151 <- function(odk){
     }
 
     # Add IDD as first column
-    iv5Out <- cbind(as.character(odk$meta.instanceID), iv5Out)
+    indexID <- which(stri_endswith_fixed(odkNames, tolower(id_col)))
+    if (length(indexID)) {
+        iv5Out <- cbind(as.character(odk[, indexID]), iv5Out)
+    } else {
+        message("Did not find id_col, so assigning row numbers for IDs.",
+                call. = FALSE)
+        iv5Out <- cbind(as.character(1:nrow(iv5Out)), iv5Out)
+    }
 
     # Attach column names
     colnames(iv5Out) <- c("ID", iv5Names)
