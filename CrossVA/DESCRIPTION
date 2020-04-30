@@ -9,7 +9,7 @@ Description: Enables transformation of Verbal Autopsy data collected with the WH
 License: GPL-3
 Depends: R (>= 3.2.0)
 LazyData: TRUE
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 Imports: stringi
 Packaged: 2020-03-26 17:52:26 UTC
 Authors@R: c(
