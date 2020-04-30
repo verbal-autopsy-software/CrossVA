@@ -167,11 +167,24 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
     )
 
     indexData <- apply(tmpMat, 2, which)
+    if (is.list(indexData)) {
+        dups <- lapply(indexData, function(x) length(x) > 1)
+        tmpNames <- whoNames[qYesNo]
+        cat(
+            paste("Duplicate column names containing:",
+                  tmpNames[unlist(dups)],
+                  sep = " "),
+            sep = "\n"
+        )
+        stop("Problem with data: please remove or rename one of the duplicate columns.")
+    }
     iv5Out[ , qYesNo] <- as.matrix(odk[ , indexData])
-    iv5Out[iv5Out=="yes"] <- "y"
-    iv5Out[iv5Out=="no"] <- "n"
-    iv5Out[iv5Out=="dk"] <- "."
-    iv5Out[iv5Out=="ref"] <- "."
+    iv5Out[iv5Out=="yes" | iv5Out=="Yes" | iv5Out=="YES"] <- "y"
+    iv5Out[iv5Out=="no" | iv5Out=="No" | iv5Out=="NO"] <- "n"
+    iv5Out[iv5Out=="dk" | iv5Out=="DK" | iv5Out=="Doesn't Know"] <- "."
+    iv5Out[iv5Out=="Doesn't know" | iv5Out=="doesn't know"] <- "."
+    iv5Out[iv5Out=="does not know" | iv5Out=="Does Not Know" | iv5Out=="Does not know"] <- "."
+    iv5Out[iv5Out=="ref" | iv5Out=="Ref" | iv5Out=="REF"] <- "."
     iv5Out[iv5Out==""] <- "."
     iv5Out[is.na(iv5Out)] <- "."
 
@@ -201,7 +214,7 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
         sum(nonNumeric < 0, na.rm = TRUE) > 0,
         1, 0)
     numNA <- numNA + containsNA
-    if (containsNA > 0) indexNA <- c(indexNA, whoNames[indexData1y])
+    if (containsNA > 0) indexNA <- c(indexNA, odkNames[indexData1y])
     nonNumeric[nonNumeric < 0] <- NA
     odk[is.na(nonNumeric), indexData1y] <- NA
     odk[, indexData1y] <- as.numeric(odk[, indexData1y])
@@ -213,7 +226,7 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
         sum(nonNumeric < 0, na.rm = TRUE) > 0,
         1, 0)
     numNA <- numNA + containsNA
-    if (containsNA > 0) indexNA <- c(indexNA, whoNames[indexData1m])
+    if (containsNA > 0) indexNA <- c(indexNA, odkNames[indexData1m])
     nonNumeric[nonNumeric < 0] <- NA
     odk[is.na(nonNumeric), indexData1m] <- NA
     odk[, indexData1m] <- as.numeric(odk[, indexData1m])
@@ -225,7 +238,7 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
         sum(nonNumeric < 0, na.rm = TRUE) > 0,
         1, 0)
     numNA <- numNA + containsNA
-    if (containsNA > 0) indexNA <- c(indexNA, whoNames[indexData1d])
+    if (containsNA > 0) indexNA <- c(indexNA, odkNames[indexData1d])
     nonNumeric[nonNumeric < 0] <- NA
     odk[is.na(nonNumeric), indexData1d] <- NA
     odk[, indexData1d] <- as.numeric(odk[, indexData1d])
@@ -239,7 +252,7 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
         sum(nonNumeric < 0, na.rm = TRUE) > 0,
         1, 0)
     numNA <- numNA + containsNA
-    if (containsNA > 0) indexNA <- c(indexNA, whoNames[indexData3])
+    if (containsNA > 0) indexNA <- c(indexNA, odkNames[indexData3])
     nonNumeric[nonNumeric < 0] <- NA
     odk[is.na(nonNumeric), indexData3] <- NA
     odk[, indexData3] <- as.numeric(odk[, indexData3])
@@ -253,7 +266,7 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
         sum(nonNumeric < 0, na.rm = TRUE) > 0,
         1, 0)
     numNA <- numNA + containsNA
-    if (containsNA > 0) indexNA <- c(indexNA, whoNames[indexData4d])
+    if (containsNA > 0) indexNA <- c(indexNA, odkNames[indexData4d])
     nonNumeric[nonNumeric < 0] <- NA
     odk[is.na(nonNumeric), indexData4d] <- NA
     odk[, indexData4d] <- as.numeric(odk[, indexData4d])
@@ -265,7 +278,7 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
         sum(nonNumeric < 0, na.rm = TRUE) > 0,
         1, 0)
     numNA <- numNA + containsNA
-    if (containsNA > 0) indexNA <- c(indexNA, whoNames[indexData4m])
+    if (containsNA > 0) indexNA <- c(indexNA, odkNames[indexData4m])
     nonNumeric[nonNumeric < 0] <- NA
     odk[is.na(nonNumeric), indexData4m] <- NA
     odk[, indexData4m] <- as.numeric(odk[, indexData4m])
@@ -277,7 +290,7 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
         sum(nonNumeric < 0, na.rm = TRUE) > 0,
         1, 0)
     numNA <- numNA + containsNA
-    if (containsNA > 0) indexNA <- c(indexNA, whoNames[indexData4y])
+    if (containsNA > 0) indexNA <- c(indexNA, odkNames[indexData4y])
     nonNumeric[nonNumeric < 0] <- NA
     odk[is.na(nonNumeric), indexData4y] <- NA
     odk[, indexData4y] <- as.numeric(odk[, indexData4y])
@@ -289,7 +302,7 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
         sum(nonNumeric < 0, na.rm = TRUE) > 0,
         1, 0)
     numNA <- numNA + containsNA
-    if (containsNA > 0) indexNA <- c(indexNA, whoNames[indexData5d])
+    if (containsNA > 0) indexNA <- c(indexNA, odkNames[indexData5d])
     nonNumeric[nonNumeric < 0] <- NA
     odk[is.na(nonNumeric), indexData5d] <- NA
     odk[, indexData5d] <- as.numeric(odk[, indexData5d])
