@@ -54,6 +54,9 @@ translate <- function (relevant, death) {
     patternSelected <- "(?<![>|<|!])="
     newRelevant <- stri_replace_all_regex(relevant, patternSelected, "==")
 
+    ## # strip whitespace around 
+    ## newRelevant <- stri_replace_all_regex(newRelevant, patternSelected, "==")
+
     # translate selected() -- maybe have separate functions for these
     patternSelected <- "(?<!not\\()selected\\(\\$\\{([^\\}]+)\\}[^']+('[^']+')\\)"
     newRelevant <- stri_replace_all_regex(newRelevant, patternSelected, "death\\$$1 == $2")
@@ -64,7 +67,7 @@ translate <- function (relevant, death) {
 
     # translate ${field_name} (separately for !=, =, >, and <)
     # \\1 = field name, group 2 = }, group 5 =, group 6 target 
-    patternFieldEq <- "(?<!selected\\()\\$\\{([^\\}]+)(\\})[:space:]*(==|!=|>|>=|<|<=)[:space:]*"
+    patternFieldEq <- "(?<!selected\\()\\$\\{([^\\}]+)(\\})[:space:]*(==|!=|>[^=]|>=|<[^=]|<=)[:space:]*"
     newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "death\\$$1 $3 ")
     ## patternFieldEq <- "(?<!selected\\()\\$\\{([^\\}]+)(\\})([[:space:]+|=]+[:space:]*)"
     ## newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "death\\$$1 != ")
