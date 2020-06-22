@@ -50,27 +50,34 @@ translate <- function (relevant, death) {
     fieldNames <- unlist(lapply(splitNames, function (x) x[length(x)]))
     names(death) <- fieldNames
 
+    # replace = with == (but not for >= or <= or !=)
+    patternSelected <- "(?<![>|<|!])="
+    newRelevant <- stri_replace_all_regex(relevant, patternSelected, "==")
+
     # translate selected() -- maybe have separate functions for these
     patternSelected <- "(?<!not\\()selected\\(\\$\\{([^\\}]+)\\}[^']+('[^']+')\\)"
-    newRelevant <- stri_replace_all_regex(relevant, patternSelected, "death\\$$1 == $2")
+    newRelevant <- stri_replace_all_regex(newRelevant, patternSelected, "death\\$$1 == $2")
 
-    ## # translate not(selected())
-    ## patternNotSelected <- "not\\(selected\\(\\$\\{([^\\}]+)\\}[^']+('[^']+')\\)\\)"
-    ## newRelevant <- stri_replace_all_regex(newRelevant, patternNotSelected, "!(death\\$$1 == $2)")
+    # translate not(selected())
+    patternNotSelected <- "not\\(selected\\(\\$\\{([^\\}]+)\\}[^']+('[^']+')\\)\\)"
+    newRelevant <- stri_replace_all_regex(newRelevant, patternNotSelected, "death\\$$1 != $2")
 
-    ## # translate ${field_name} (separately for !=, =, >, and <
-    ## # \\2 = {, \\3 = field name, group 4 }, group 5 =, group 6 target 
-    ## patternFieldEq <- "(?<!selected\\()\\$\\{([^\\}]+)(\\})([[:space:]|=]+[:space:]*)"
-    ## newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "death\\$$1 == ")
+    # translate ${field_name} (separately for !=, =, >, and <)
+    # \\1 = field name, group 2 = }, group 5 =, group 6 target 
+    patternFieldEq <- "(?<!selected\\()\\$\\{([^\\}]+)(\\})[:space:]*(==|!=|>|>=|<|<=)[:space:]*"
+    newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "death\\$$1 $3 ")
+    ## patternFieldEq <- "(?<!selected\\()\\$\\{([^\\}]+)(\\})([[:space:]+|=]+[:space:]*)"
+    ## newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "death\\$$1 != ")
 
-    ## # translate or replace " or " with " | "
-    ## newRelevant <- stri_replace_all_regex(newRelevant, " or ", " | ")
-    ## newRelevant <- stri_replace_all_regex(newRelevant, "\\)or\\(", ") | (")
+    ## devtools::test_file('../tests/testthat/test-item-response.R')
+
+    # translate or replace " or " with " | "
+    newRelevant <- stri_replace_all_regex(newRelevant, " or ", " | ")
+    newRelevant <- stri_replace_all_regex(newRelevant, "\\)or\\(", ") | (")
     
-    ## # translate and odkForm$relevant[437]
-    ## newRelevant <- stri_replace_all_regex(newRelevant, "[[:space:]+and[:space:]+", " & ")
-    ## newRelevant <- stri_replace_all_regex(newRelevant, "\\)and\\(", " & ")
-    ## newRelevant <- stri_replace_all_regex(newRelevant, "\\)and\\(", " & ")
+    # translate and odkForm$relevant[437]
+    newRelevant <- stri_replace_all_regex(newRelevant, "[:space:]+and[:space:]+", " & ")
+    newRelevant <- stri_replace_all_regex(newRelevant, "\\)and\\(", " & ")
 
 
     # translate 'NaN'
