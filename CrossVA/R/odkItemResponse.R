@@ -41,7 +41,8 @@ translate <- function (relevant, death) {
 
     # translate ${field_name} (separately for !=, =, >, and <)
     # \\1 = field name, \\2 = }, \\3 = relational operator/comparators
-    patternFieldEq <- "(?<!selected\\()\\$\\{([^\\}]+)(\\})[:space:]*(==|!=|>[^=]|>=|<[^=]|<=)[:space:]*"
+    ## patternFieldEq <- "(?<!selected\\()\\$\\{([^\\}]+)(\\})[:space:]*(==|!=|>[^=]|>=|<[^=]|<=)[:space:]*"
+    patternFieldEq <- "(?<!selected\\()\\$\\{([^\\}]+)(\\})[:space:]*([=|!|>|<]=*)[:space:]*"
     newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "death\\$$1 $3 ")
  
     # translate or replace " or " with " | "
@@ -57,12 +58,16 @@ translate <- function (relevant, death) {
     # translate 'NaN' (note previous conversions with = and with field name)
     #${ageInMonthsByYear} = 'NaN'
     # \\1 = field name
-    patternFieldEq <- "death\\$([^[:space:][:punct:]}]+)[:space:]*==[:space:]*'NaN'"
+    ## patternFieldEq <- "death\\$([^[:space:][:punct:]}]+)[:space:]*==[:space:]*'NaN'"
+    patternFieldEq <- "death\\$([^[:space:][:punct:]]+)[:space:]*==[:space:]*'NaN'"
     newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "is.na(death\\$$1)")
-    patternFieldEq <- "death\\$([^[:space:][:punct:]}]+)[:space:]*!=[:space:]*'NaN'"
+    ## patternFieldEq <- "death\\$([^[:space:][:punct:]}]+)[:space:]*!=[:space:]*'NaN'"
+    patternFieldEq <- "death\\$([^[:space:][:punct:]]+)[:space:]*!=[:space:]*'NaN'"
     newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "!is.na(death\\$$1)")
 
     # translate string-length(${ageInMonthsByYear}) = 0)) with nchar
+    patternFieldEq <- "string-length\\(\\$\\{([^\\}]+)\\}\\)"
+    newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "nchar(death\\$$1)")
 
     # newRelevant
     # eval(parse(text = paste0("death$", newRelevant)))

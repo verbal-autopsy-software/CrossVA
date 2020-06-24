@@ -54,7 +54,7 @@ test_that("multiple: ((selected(${isChild}, '1') and ${ageInMonthsByYear} >=48 )
 test_that("multiple: selected(${isNeonatal}, '1') or (selected(${isChild}, '1') and (${ageInMonthsByYear} = 'NaN' or string-length(${ageInMonthsByYear}) = 0)) or (selected(${isChild}, '1') and ${ageInMonthsByYear} != 'NaN' and string-length(${ageInMonthsByYear}) > 0 and ${ageInMonthsByYear}<12)", {
     relevant <- form151$relevant[465]
     newRelevant <- translate(relevant, death)
-    expect_equal(newRelevant, "death$isNeonatal == '1' | (death$isChild == '1' & (is.na(death$ageInMonthsByYear) | nchar(death$ageInMonthsByYear == '') | (death$isChild == '1' & !is.na(death$ageInMonthsByYear) & death$ageInMonthsByYear & death$ageInMonthsByYear < 12")
+    expect_equal(newRelevant, "death$isNeonatal == '1' | (death$isChild == '1' & (is.na(death$ageInMonthsByYear) | nchar(death$ageInMonthsByYear) == 0)) | (death$isChild == '1' & !is.na(death$ageInMonthsByYear) & nchar(death$ageInMonthsByYear) > 0 & death$ageInMonthsByYear < 12)")
 })
 
 test_that("double selected", {
