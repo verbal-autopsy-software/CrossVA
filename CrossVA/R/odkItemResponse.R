@@ -20,29 +20,6 @@
 #' @importFrom stringi stri_replace_all_regex
 #' @export
 #'
-
-## ## set up inputs
-## death <- odkData[1,]
-## names(death)
-
-## splitNames <- strsplit(names(death), "\\.")
-## fieldNames <- unlist(lapply(splitNames, function (x) x[length(x)]))
-## names(death) <- fieldNames
-
-## relevant <- odkForm$relevant[15] ## "selected(${Id10013}, 'yes')"
-## relevant <- odkForm$relevant[462] ## "(selected(${isNeonatal}, '1') or selected(${isChild}, '1'))"
-##                                   ## check if numbers are character or numeric in actual data
-##                                   ## however, note: 1 == "1"
-## relevant <- odkForm$relevant[515] ## "not(selected(${Id10114}, 'yes'))"
-## relevant <- odkForm$relevant[37] ## "${isChild1} = '1'"
-## relevant <- odkForm$relevant[39] ##  "${Id10020} != 'yes' or ${Id10022} != 'yes'"
-## relevant <- odkForm$relevant[69] ##  ${ageInMonthsByYear} >=48 ) with other stuff
-## relevant <- odkForm$relevant[465] ## string-length(${ageInMonthsByYear}) = 0))
-## relevant <- odkForm$relevant[486] ## multiple not selected's
-## relevant <- odkForm$relevant[437] ## selected and not selected and condition
-
-## I think it is easiest if we just translate
-
 translate <- function (relevant, death) {
 
     # parse field names
@@ -54,9 +31,6 @@ translate <- function (relevant, death) {
     patternSelected <- "(?<![>|<|!])="
     newRelevant <- stri_replace_all_regex(relevant, patternSelected, "==")
 
-    ## # strip whitespace around 
-    ## newRelevant <- stri_replace_all_regex(newRelevant, patternSelected, "==")
-
     # translate selected() -- maybe have separate functions for these
     patternSelected <- "(?<!not\\()selected\\(\\$\\{([^\\}]+)\\}[^']+('[^']+')\\)"
     newRelevant <- stri_replace_all_regex(newRelevant, patternSelected, "death\\$$1 == $2")
@@ -66,28 +40,34 @@ translate <- function (relevant, death) {
     newRelevant <- stri_replace_all_regex(newRelevant, patternNotSelected, "death\\$$1 != $2")
 
     # translate ${field_name} (separately for !=, =, >, and <)
-    # \\1 = field name, group 2 = }, group 5 =, group 6 target 
+    # \\1 = field name, \\2 = }, \\3 = relational operator/comparators
     patternFieldEq <- "(?<!selected\\()\\$\\{([^\\}]+)(\\})[:space:]*(==|!=|>[^=]|>=|<[^=]|<=)[:space:]*"
     newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "death\\$$1 $3 ")
-    ## patternFieldEq <- "(?<!selected\\()\\$\\{([^\\}]+)(\\})([[:space:]+|=]+[:space:]*)"
-    ## newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "death\\$$1 != ")
-
-    ## devtools::test_file('../tests/testthat/test-item-response.R')
-
+ 
     # translate or replace " or " with " | "
     newRelevant <- stri_replace_all_regex(newRelevant, " or ", " | ")
-    newRelevant <- stri_replace_all_regex(newRelevant, "\\)or\\(", ") | (")
+    newRelevant <- stri_replace_all_regex(newRelevant, "\\)or", ") | (")
+    newRelevant <- stri_replace_all_regex(newRelevant, "or\\(", ") | (")
     
     # translate and odkForm$relevant[437]
     newRelevant <- stri_replace_all_regex(newRelevant, "[:space:]+and[:space:]+", " & ")
-    newRelevant <- stri_replace_all_regex(newRelevant, "\\)and\\(", " & ")
+    newRelevant <- stri_replace_all_regex(newRelevant, "\\)and", " & ")
+    newRelevant <- stri_replace_all_regex(newRelevant, "and\\(", " & ")
 
+    # translate 'NaN' (note previous conversions with = and with field name)
+    #${ageInMonthsByYear} = 'NaN'
+    # \\1 = field name
+    patternFieldEq <- "death\\$([^[:space:][:punct:]}]+)[:space:]*==[:space:]*'NaN'"
+    newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "is.na(death\\$$1)")
+    patternFieldEq <- "death\\$([^[:space:][:punct:]}]+)[:space:]*!=[:space:]*'NaN'"
+    newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "!is.na(death\\$$1)")
 
-    # translate 'NaN'
+    # translate string-length(${ageInMonthsByYear}) = 0)) with nchar
 
     # newRelevant
     # eval(parse(text = paste0("death$", newRelevant)))
     # with(data, eval(parse(text = newRelevant)))
 
+    ## devtools::test_file('../tests/testthat/test-item-response.R')
     return(newRelevant)
 }
