@@ -1,6 +1,4 @@
 # Test that translate properly handles each case.
-# testthat::test_file('../tests/testthat/test-item-response.R')
-
 context("Test translate().")
 
 record_f_name151 <- system.file("sample",
