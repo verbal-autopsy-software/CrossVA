@@ -17,7 +17,7 @@
 #' odkForm <- read_xlsx("08_1_WHOVA2016_v1_5_1_XLS_form_for_ODK.xlsx", sheet = "survey")
 #' }
 #'
-#' @importFrom stringi stri_replace_all_regex
+#' @importFrom stringi stri_replace_all_regex stri_count_words
 #' @export
 #'
 translate <- function (relevant, death) {
@@ -27,9 +27,13 @@ translate <- function (relevant, death) {
     fieldNames <- unlist(lapply(splitNames, function (x) x[length(x)]))
     names(death) <- fieldNames
 
+    # remove \n
+    patternSelected <- "\n"
+    newRelevant <- stri_replace_all_regex(relevant, patternSelected, " ")
+
     # replace = with == (but not for >= or <= or !=)
     patternSelected <- "(?<![>|<|!])="
-    newRelevant <- stri_replace_all_regex(relevant, patternSelected, "==")
+    newRelevant <- stri_replace_all_regex(newRelevant, patternSelected, "==")
 
     # translate selected() -- maybe have separate functions for these
     patternSelected <- "(?<!not\\()selected\\(\\$\\{([^\\}]+)\\}[^']+('[^']+')\\)"
@@ -41,7 +45,6 @@ translate <- function (relevant, death) {
 
     # translate ${field_name} (separately for !=, =, >, and <)
     # \\1 = field name, \\2 = }, \\3 = relational operator/comparators
-    ## patternFieldEq <- "(?<!selected\\()\\$\\{([^\\}]+)(\\})[:space:]*(==|!=|>[^=]|>=|<[^=]|<=)[:space:]*"
     patternFieldEq <- "(?<!selected\\()\\$\\{([^\\}]+)(\\})[:space:]*([=|!|>|<]=*)[:space:]*"
     newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "death\\$$1 $3 ")
  
@@ -56,18 +59,20 @@ translate <- function (relevant, death) {
     newRelevant <- stri_replace_all_regex(newRelevant, "and\\(", " & ")
 
     # translate 'NaN' (note previous conversions with = and with field name)
-    #${ageInMonthsByYear} = 'NaN'
-    # \\1 = field name
-    ## patternFieldEq <- "death\\$([^[:space:][:punct:]}]+)[:space:]*==[:space:]*'NaN'"
+    ## is.na() == TRUE
     patternFieldEq <- "death\\$([^[:space:][:punct:]]+)[:space:]*==[:space:]*'NaN'"
     newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "is.na(death\\$$1)")
-    ## patternFieldEq <- "death\\$([^[:space:][:punct:]}]+)[:space:]*!=[:space:]*'NaN'"
+    ## is.na() == FALSE
     patternFieldEq <- "death\\$([^[:space:][:punct:]]+)[:space:]*!=[:space:]*'NaN'"
     newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "!is.na(death\\$$1)")
 
     # translate string-length(${ageInMonthsByYear}) = 0)) with nchar
     patternFieldEq <- "string-length\\(\\$\\{([^\\}]+)\\}\\)"
     newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "nchar(death\\$$1)")
+
+    # translate count-selected 
+    patternFieldEq <- "count-selected\\(\\$\\{([^\\}]+)\\}\\)"
+    newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "stri_count_words(death\\$$1)")
 
     # newRelevant
     # eval(parse(text = paste0("death$", newRelevant)))

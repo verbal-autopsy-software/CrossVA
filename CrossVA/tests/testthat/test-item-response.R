@@ -68,3 +68,9 @@ test_that("multiple: ((selected(${isAdult}, '1') and not(selected(${Id10310}, 'y
     newRelevant <- translate(relevant, death)
     expect_equal(newRelevant, "((death$isAdult == '1' & death$Id10310 != 'yes') & (death$Id10019 == 'female') | death$Id10019 == 'undetermined')")
 })
+
+test_that("count-selected: (selected(${Id10235}, 'DK') or selected(${Id10235}, 'Ref')) and count-selected(${Id10235})>1", {
+    relevant <- form151$relevant[304]
+    newRelevant <- translate(relevant, death)
+    expect_equal(newRelevant, "(death$Id10235 == 'DK' | death$Id10235 == 'Ref') & stri_count_words(death$Id10235)>1")
+})
