@@ -72,3 +72,19 @@ test_that("count-selected: (selected(${Id10235}, 'DK') or selected(${Id10235}, '
     newRelevant <- translate(relevant, death)
     expect_equal(newRelevant, "(death$Id10235 == 'DK' | death$Id10235 == 'Ref') & stri_count_words(death$Id10235)>1")
 })
+
+# Test itemHierarchy().
+context("Test itemHierarchy().")
+
+test_that("Test itemHierarchy() against 2016 WHO v151", {
+
+    splitNames <- strsplit(names(records151), "\\.")
+    fieldNames <- unlist(lapply(splitNames, function (x) x[length(x)]))
+    compFieldNames <- names(records151)[fieldNames %in% form151$name]
+    itemGroups <- itemHierarchy(form151)$itemGroups
+
+    for (i in compFieldNames) {
+        expect_true(i %in% itemGroups, label = i)
+    }
+
+})
