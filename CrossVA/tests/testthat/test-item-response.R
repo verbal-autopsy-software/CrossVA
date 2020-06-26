@@ -73,6 +73,12 @@ test_that("count-selected: (selected(${Id10235}, 'DK') or selected(${Id10235}, '
     expect_equal(new_relevant, "(death$Id10235 == 'DK' | death$Id10235 == 'Ref') & stri_count_words(death$Id10235)>1")
 })
 
+test_that("misc: ((selected(${isChild}, '1')and selected(${Id10195}, 'yes')) or (selected(${isAdult}, '1') and selected(${Id10194}, 'yes')))", {
+    relevant <- "((selected(${isChild}, '1')and selected(${Id10195}, 'yes')) or (selected(${isAdult}, '1') and selected(${Id10194}, 'yes')))"
+    new_relevant <- translate(relevant)
+    expect_equal(new_relevant, "((death$isChild == '1' & death$Id10195 == 'yes') | (death$isAdult == '1' & death$Id10194 == 'yes'))")
+})
+
 # Test itemHierarchy().
 context("Test itemHierarchy().")
 
@@ -86,5 +92,24 @@ test_that("Test itemHierarchy() against 2016 WHO v151", {
     for (i in comp_field_names) {
         expect_true(i %in% item_groups, label = i)
     }
+
+})
+
+
+# Test itemMissing().
+context("Test itemMissing().")
+
+test_that("Test itemMissing() returns appropriate list.", {
+
+    results <- itemMissing(records151, form151)
+    expect_true(is.list(results))
+    expect_true(names(results) == c("Deaths", "Items"))
+    match_items_cols <- names(results$Items) %in%
+        c("type", "name", "label..English", "relevant",
+          "required", "n_asked", "n_ref", "n_dk", "n_miss")
+    expect_true(sum(match_items_cols) == 9)
+    match_deaths_cols <- names(results$Deaths) %in%
+        c("ID", "n_items", "n_ref", "n_dk", "n_miss")
+    expect_true(sum(match_deaths_cols) == 5)
 
 })

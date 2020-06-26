@@ -58,8 +58,10 @@ translate <- function (relevant) {
     
     # translate and odkForm$relevant[437]
     new_relevant <- stri_replace_all_regex(new_relevant, "[:space:]+and[:space:]+", " & ")
-    new_relevant <- stri_replace_all_regex(new_relevant, "\\)and", " & ")
-    new_relevant <- stri_replace_all_regex(new_relevant, "and\\(", " & ")
+    ## new_relevant <- stri_replace_all_regex(new_relevant, "\\)and", " & ")
+    ## new_relevant <- stri_replace_all_regex(new_relevant, "and\\(", " & ")
+    new_relevant <- stri_replace_all_regex(new_relevant, "([:punct:])and", "$1 &")
+    new_relevant <- stri_replace_all_regex(new_relevant, "and([:punct:])", "& $1")
 
     # translate 'NaN' (note previous conversions with = and with field name)
     ## is.na() == TRUE
@@ -208,71 +210,94 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
     ## set up input data
     split_names <- strsplit(names(odk_data), "\\.")
     death_fnames <- unlist(lapply(split_names, function (x) x[length(x)]))
-    names(odk_data) <- death_fnames
+    ## names(odk_data) <- death_fnames
     new_odk_form <- itemHierarchy(odk_form)
     clean_form <- new_odk_form[new_odk_form$name != "",]
 
     ## set up output data
-    n_deaths <- nrow(odk)
+    n_deaths <- nrow(odk_data)
     index_ID <- which(stri_endswith_fixed(names(odk_data), id_col))
     if (length(index_ID)) {
         DEATHS <- data.frame(ID = odk_data[, index_ID],
-                             n_items <- rep(NA, n_deaths),
-                             n_ref <- rep(NA, n_deaths),
-                             n_dk <- rep(NA, n_deaths),
-                             n_miss <- rep(NA, n_deaths))
+                             n_items = rep(0, n_deaths),
+                             n_ref = rep(0, n_deaths),
+                             n_dk = rep(0, n_deaths),
+                             n_miss = rep(0, n_deaths),
+                             stringsAsFactors = FALSE)
     } else {
         ## message("Did not find id_col, so assigning row numbers for IDs.",
         ##         call. = FALSE)
         DEATHS <- data.frame(ID = 1:n_deaths,
-                             n_items <- rep(NA, n_deaths),
-                             n_ref <- rep(NA, n_deaths),
-                             n_dk <- rep(NA, n_deaths),
-                             n_miss <- rep(NA, n_deaths))
+                             n_items = rep(0, n_deaths),
+                             n_ref = rep(0, n_deaths),
+                             n_dk = rep(0, n_deaths),
+                             n_miss = rep(0, n_deaths))
     }
 
-    ITEMS <- clean_form[, c('type', 'name', 'relevant', 'required')]
-    ITEMS$n_asked <- rep(NA, nrow(clean_form))
-    ITEMS$n_ref <- rep(NA, nrow(clean_form))
-    ITEMS$n_dk <- rep(NA, nrow(clean_form))
-    ITEMS$n_miss <- rep(NA, nrow(clean_form))
-    ## dim(ITEMS)
+    ITEMS <- clean_form[, c('type', 'name', 'label..English', 'relevant', 'required')]
+    ITEMS$n_asked <- rep(0, nrow(clean_form))
+    ITEMS$n_ref <- rep(0, nrow(clean_form))
+    ITEMS$n_dk <- rep(0, nrow(clean_form))
+    ITEMS$n_miss <- rep(0, nrow(clean_form))
 
     ## warning message about which fields are in data, but not in form
     ## and vice versa.
 
-    ## fill in data
-    ## loop deaths
+    names(odk_data) <- death_fnames
+    odk_data$item_response_ID <- DEATHS$ID
     for (i in 1:ncol(odk_data)) {
 
-        ## i=1  i = 16
-        ## death_fnames[i] %in% clean_form$name
-        ## i=2
-        ## death_fnames[i] %in% clean_form$name
-        ## form151$name[which(clean_form151$name == deathFNames[i])]
         index_form <- which(clean_form$name == death_fnames[i])
+
         if (length(index_form) == 0) next
         
-        ## clean_form$relevant[index_form]
         depends <- strsplit(clean_form$item_group[index_form], "\\.")
         depends <- unlist(depends)
         index_depends <- which(clean_form$name %in% depends)
         depends_relevant <- clean_form$relevant[index_depends]
-        translated_relevant <- vapply(depends_relevant, translate,
-                                      FUN.VALUE = character(1),
-                                      USE.NAMES = FALSE)
-        translated_relevant <- translated_relevant[!(translated_relevant == "")]
-        combined_relevant <- paste0("(", translated_relevant, ")", collapse = " & ")
-        which((odk_data$Id10013 == 'yes') & (odk_data$Id10020 == 'yes'))
-        odk_data[(odk_data$Id10013 == 'yes') & (odk_data$Id10020 == 'yes'), death_fnames[i]]
-        
-        # new_relevant
-        # eval(parse(text = paste0("death$", new_relevant)))
-        # with(data, eval(parse(text = new_relevant)))
+        if (all(depends_relevant == "")) {
+            responses <- odk_data
+        } else {
+            translated_relevant <- vapply(depends_relevant, translate,
+                                          FUN.VALUE = character(1),
+                                          USE.NAMES = FALSE)
+            translated_relevant <- translated_relevant[!(translated_relevant == "")]
+            combined_relevant <- paste0("(", translated_relevant, ")", collapse = " & ")
+            combined_relevant <- gsub("death\\$", "odk_data\\$", combined_relevant)
+            responses <- eval(parse(text = paste0("subset(odk_data,", combined_relevant, ")")))
+        }
 
+        # fill in DEATHS
+        ## need to check for missing values for integer types (e.g., 99 = don't know, 98 = refuse)
+        ## create a new function for this that goes through integer types and searchs the
+        ## constraint (hint as well?)
+        DEATHS_index <- match(responses$item_response_ID, DEATHS$ID)
+        DEATHS[DEATHS_index, "n_items"] <- DEATHS[DEATHS_index, "n_items"] + 1
+        DEATHS[DEATHS_index, "n_ref"] <- DEATHS[DEATHS_index, "n_ref"] +
+            as.numeric(tolower(responses[, death_fnames[i]]) == "ref")
+        DEATHS[DEATHS_index, "n_dk"] <- DEATHS[DEATHS_index, "n_dk"] +
+            as.numeric(tolower(responses[, death_fnames[i]]) == "dk")
+        DEATHS[DEATHS_index, "n_miss"] <- DEATHS[DEATHS_index, "n_miss"] +
+            as.numeric(
+                tolower(responses[, death_fnames[i]]) == "" |
+                is.na(responses[, death_fnames[i]])
+            )
+        
+        # fill in ITEMS
+        names(ITEMS)
+        ITEMS[index_form, "n_asked"] <- ITEMS[index_form, "n_asked"] + 1
+        ITEMS[index_form, "n_ref"] <- ITEMS[index_form, "n_ref"] +
+            sum(tolower(responses[, death_fnames[i]]) == "ref")
+        ITEMS[index_form, "n_dk"] <- ITEMS[index_form, "n_dk"] +
+            sum(tolower(responses[, death_fnames[i]]) == "dk")
+        ITEMS[index_form, "n_miss"] <- ITEMS[index_form, "n_miss"] +
+            sum(tolower(responses[, death_fnames[i]]) == "" |
+                is.na(responses[, death_fnames[i]]))
+    }
+
+    ## devtools::test_file("../tests/testthat/test-item-response.R")
     # That's all folks!
     results <- list(Deaths <- DEATHS,
                     Items <- ITEMS)
     return (results)
-
 }
