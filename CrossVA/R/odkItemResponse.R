@@ -4,8 +4,6 @@
 #'
 #' @param relevant A string from ODK$relevant that needs to be translated.
 #'
-#' @param death A dataframe (one death) of ODK data.
-#'
 #' @details
 #' This is a worker function.
 #' 
@@ -24,72 +22,63 @@
 #' death <- records151[1,]
 #' 
 #' relevant <- form151$relevant[15]
-#' translate(relevant, death)
+#' translate(relevant)
 #' }
 #'
 #' @importFrom stringi stri_replace_all_regex stri_count_words
 #' @export
 #'
-translate <- function (relevant, death) {
-
-    # parse field names
-    splitNames <- strsplit(names(death), "\\.")
-    fieldNames <- unlist(lapply(splitNames, function (x) x[length(x)]))
-    names(death) <- fieldNames
+translate <- function (relevant) {
 
     # remove \n
-    patternSelected <- "\n"
-    newRelevant <- stri_replace_all_regex(relevant, patternSelected, " ")
+    pattern_selected <- "\n"
+    new_relevant <- stri_replace_all_regex(relevant, pattern_selected, " ")
 
     # replace = with == (but not for >= or <= or !=)
-    patternSelected <- "(?<![>|<|!])="
-    newRelevant <- stri_replace_all_regex(newRelevant, patternSelected, "==")
+    pattern_selected <- "(?<![>|<|!])="
+    new_relevant <- stri_replace_all_regex(new_relevant, pattern_selected, "==")
 
     # translate selected() -- maybe have separate functions for these
-    patternSelected <- "(?<!not\\()selected\\(\\$\\{([^\\}]+)\\}[^']+('[^']+')\\)"
-    newRelevant <- stri_replace_all_regex(newRelevant, patternSelected, "death\\$$1 == $2")
+    pattern_selected <- "(?<!not\\()selected\\(\\$\\{([^\\}]+)\\}[^']+('[^']+')\\)"
+    new_relevant <- stri_replace_all_regex(new_relevant, pattern_selected, "death\\$$1 == $2")
 
     # translate not(selected())
-    patternNotSelected <- "not\\(selected\\(\\$\\{([^\\}]+)\\}[^']+('[^']+')\\)\\)"
-    newRelevant <- stri_replace_all_regex(newRelevant, patternNotSelected, "death\\$$1 != $2")
+    pattern_not_selected <- "not\\(selected\\(\\$\\{([^\\}]+)\\}[^']+('[^']+')\\)\\)"
+    new_relevant <- stri_replace_all_regex(new_relevant, pattern_not_selected, "death\\$$1 != $2")
 
     # translate ${field_name} (separately for !=, =, >, and <)
     # \\1 = field name, \\2 = }, \\3 = relational operator/comparators
-    patternFieldEq <- "(?<!selected\\()\\$\\{([^\\}]+)(\\})[:space:]*([=|!|>|<]=*)[:space:]*"
-    newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "death\\$$1 $3 ")
+    pattern_field_eq <- "(?<!selected\\()\\$\\{([^\\}]+)(\\})[:space:]*([=|!|>|<]=*)[:space:]*"
+    new_relevant <- stri_replace_all_regex(new_relevant, pattern_field_eq, "death\\$$1 $3 ")
  
     # translate or replace " or " with " | "
-    newRelevant <- stri_replace_all_regex(newRelevant, " or ", " | ")
-    newRelevant <- stri_replace_all_regex(newRelevant, "\\)or", ") | (")
-    newRelevant <- stri_replace_all_regex(newRelevant, "or\\(", ") | (")
+    new_relevant <- stri_replace_all_regex(new_relevant, " or ", " | ")
+    new_relevant <- stri_replace_all_regex(new_relevant, "\\)or", ") | (")
+    new_relevant <- stri_replace_all_regex(new_relevant, "or\\(", ") | (")
     
     # translate and odkForm$relevant[437]
-    newRelevant <- stri_replace_all_regex(newRelevant, "[:space:]+and[:space:]+", " & ")
-    newRelevant <- stri_replace_all_regex(newRelevant, "\\)and", " & ")
-    newRelevant <- stri_replace_all_regex(newRelevant, "and\\(", " & ")
+    new_relevant <- stri_replace_all_regex(new_relevant, "[:space:]+and[:space:]+", " & ")
+    new_relevant <- stri_replace_all_regex(new_relevant, "\\)and", " & ")
+    new_relevant <- stri_replace_all_regex(new_relevant, "and\\(", " & ")
 
     # translate 'NaN' (note previous conversions with = and with field name)
     ## is.na() == TRUE
-    patternFieldEq <- "death\\$([^[:space:][:punct:]]+)[:space:]*==[:space:]*'NaN'"
-    newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "is.na(death\\$$1)")
+    pattern_field_eq <- "death\\$([^[:space:][:punct:]]+)[:space:]*==[:space:]*'NaN'"
+    new_relevant <- stri_replace_all_regex(new_relevant, pattern_field_eq, "is.na(death\\$$1)")
     ## is.na() == FALSE
-    patternFieldEq <- "death\\$([^[:space:][:punct:]]+)[:space:]*!=[:space:]*'NaN'"
-    newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "!is.na(death\\$$1)")
+    pattern_field_neq <- "death\\$([^[:space:][:punct:]]+)[:space:]*!=[:space:]*'NaN'"
+    new_relevant <- stri_replace_all_regex(new_relevant, pattern_field_neq, "!is.na(death\\$$1)")
 
     # translate string-length(${ageInMonthsByYear}) = 0)) with nchar
-    patternFieldEq <- "string-length\\(\\$\\{([^\\}]+)\\}\\)"
-    newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "nchar(death\\$$1)")
+    pattern_field <- "string-length\\(\\$\\{([^\\}]+)\\}\\)"
+    new_relevant <- stri_replace_all_regex(new_relevant, pattern_field, "nchar(death\\$$1)")
 
     # translate count-selected 
-    patternFieldEq <- "count-selected\\(\\$\\{([^\\}]+)\\}\\)"
-    newRelevant <- stri_replace_all_regex(newRelevant, patternFieldEq, "stri_count_words(death\\$$1)")
-
-    # newRelevant
-    # eval(parse(text = paste0("death$", newRelevant)))
-    # with(data, eval(parse(text = newRelevant)))
+    pattern_field <- "count-selected\\(\\$\\{([^\\}]+)\\}\\)"
+    new_relevant <- stri_replace_all_regex(new_relevant, pattern_field, "stri_count_words(death\\$$1)")
 
     ## devtools::test_file('../tests/testthat/test-item-response.R')
-    return(newRelevant)
+    return(new_relevant)
 }
 
 
@@ -113,7 +102,7 @@ translate <- function (relevant, death) {
 #'                               "WHOVA2016_v1_5_1_XLS_form_for_ODK_survey.csv",
 #'                               package = "CrossVA")
 #' form151 <- read.csv2(form_f_name151, stringsAsFactors = FALSE)
-#' itemGroups <- itemHierarchy(form151)$itemGroups
+#' item_groups <- itemHierarchy(form151)$item_groups
 #' }
 #'
 #' @importFrom stringi stri_replace_all_regex stri_count_words
@@ -121,55 +110,54 @@ translate <- function (relevant, death) {
 #'
 itemHierarchy <- function (odk_form) {
 
-    skipRow <- odk_form$type == ""
-    newForm <- odk_form
-    newForm$itemGroups <- ""
+    skip_row <- odk_form$type == ""
+    new_form <- odk_form
+    new_form$item_groups <- ""
     current_name <- ""
     n_groups <- 0
 
-    nNames <- function (itemNames) {
+    nNames <- function (item_names) {
         # return the number of groups in groupNames
-        splitNames <- strsplit(itemNames, "\\.")
-        allNames <- unlist(splitNames)
-        return (length(allNames))
+        split_names <- strsplit(item_names, "\\.")
+        all_names <- unlist(split_names)
+        return (length(all_names))
     }
 
-    removeLastName <- function (itemNames) {
+    removeLastName <- function (item_names) {
         # remove last group name; groups separated by a period
-        splitNames <- strsplit(itemNames, "\\.")
-        allNames <- unlist(splitNames)
-        n <- length(allNames)
-        namesToKeep <- unlist(splitNames)[-n]
-        return (paste0(namesToKeep, collapse = "."))
-        
+        split_names <- strsplit(item_names, "\\.")
+        all_names <- unlist(split_names)
+        n <- length(all_names)
+        names_to_keep <- unlist(split_names)[-n]
+        return (paste0(names_to_keep, collapse = "."))
     }
     
-    for (i in 1:length(skipRow)) {
+    for (i in 1:length(skip_row)) {
 
-        if (skipRow[i]) next
+        if (skip_row[i]) next
 
-        if (newForm$type[i] == "begin group" & nNames(current_name) == 0) {
-            current_name <- newForm$name[i]
+        if (new_form$type[i] == "begin group" & nNames(current_name) == 0) {
+            current_name <- new_form$name[i]
             n_groups <- n_groups + 1
-            newForm$itemGroups[i] <- current_name
-        } else if (newForm$type[i] == "begin group" & nNames(current_name) > 0) {
-            current_name <- paste0(c(current_name, newForm$name[i]), collapse = ".")
+            new_form$item_groups[i] <- current_name
+        } else if (new_form$type[i] == "begin group" & nNames(current_name) > 0) {
+            current_name <- paste0(c(current_name, new_form$name[i]), collapse = ".")
             n_groups <- n_groups + 1
-            newForm$itemGroups[i] <- current_name
-        } else if (newForm$type[i] == "end group") {
+            new_form$item_groups[i] <- current_name
+        } else if (new_form$type[i] == "end group") {
             current_name <- removeLastName(current_name)
             n_groups <- n_groups - 1
             next
         } else {
-            current_name <- paste0(c(current_name, newForm$name[i]),
+            current_name <- paste0(c(current_name, new_form$name[i]),
                                    collapse = ".")
-            newForm$itemGroups[i] <- current_name
+            new_form$item_groups[i] <- current_name
             current_name <- removeLastName(current_name)
         }
     }
 
     ## devtools::test_file('../tests/testthat/test-item-response.R')
-    return (newForm)
+    return (new_form)
 }
 
 #' Calculate item missingness.
@@ -220,6 +208,9 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
     ## set up input data
     split_names <- strsplit(names(odk_data), "\\.")
     death_fnames <- unlist(lapply(split_names, function (x) x[length(x)]))
+    names(odk_data) <- death_fnames
+    new_odk_form <- itemHierarchy(odk_form)
+    clean_form <- new_odk_form[new_odk_form$name != "",]
 
     ## set up output data
     n_deaths <- nrow(odk)
@@ -240,38 +231,44 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
                              n_miss <- rep(NA, n_deaths))
     }
 
-    clean_form <- odk_form[odk_form$name != "",]
     ITEMS <- clean_form[, c('type', 'name', 'relevant', 'required')]
     ITEMS$n_asked <- rep(NA, nrow(clean_form))
     ITEMS$n_ref <- rep(NA, nrow(clean_form))
     ITEMS$n_dk <- rep(NA, nrow(clean_form))
     ITEMS$n_miss <- rep(NA, nrow(clean_form))
-    dim(ITEMS)
+    ## dim(ITEMS)
 
     ## warning message about which fields are in data, but not in form
     ## and vice versa.
 
     ## fill in data
-    for (i in 1:n_deaths) {
-        
-        ## i=1
+    ## loop deaths
+    for (i in 1:ncol(odk_data)) {
+
+        ## i=1  i = 16
         ## death_fnames[i] %in% clean_form$name
         ## i=2
         ## death_fnames[i] %in% clean_form$name
         ## form151$name[which(clean_form151$name == deathFNames[i])]
-        index_form <- which(clean_form$name == deathFNames[i])
+        index_form <- which(clean_form$name == death_fnames[i])
         if (length(index_form) == 0) next
-
         
-        if (clean_form$relevant[index_form] == "") {
-
-            ## simple tally
-        } else {
-            
-            i_relevant <- translate(clean_form$relevant[index_form],
-                                    odk_data[i,])
-        }
-    }
+        ## clean_form$relevant[index_form]
+        depends <- strsplit(clean_form$item_group[index_form], "\\.")
+        depends <- unlist(depends)
+        index_depends <- which(clean_form$name %in% depends)
+        depends_relevant <- clean_form$relevant[index_depends]
+        translated_relevant <- vapply(depends_relevant, translate,
+                                      FUN.VALUE = character(1),
+                                      USE.NAMES = FALSE)
+        translated_relevant <- translated_relevant[!(translated_relevant == "")]
+        combined_relevant <- paste0("(", translated_relevant, ")", collapse = " & ")
+        which((odk_data$Id10013 == 'yes') & (odk_data$Id10020 == 'yes'))
+        odk_data[(odk_data$Id10013 == 'yes') & (odk_data$Id10020 == 'yes'), death_fnames[i]]
+        
+        # new_relevant
+        # eval(parse(text = paste0("death$", new_relevant)))
+        # with(data, eval(parse(text = new_relevant)))
 
     # That's all folks!
     results <- list(Deaths <- DEATHS,
