@@ -95,7 +95,6 @@ test_that("Test itemHierarchy() against 2016 WHO v151", {
 
 })
 
-
 # Test itemMissing().
 context("Test itemMissing().")
 
@@ -103,7 +102,8 @@ test_that("Test itemMissing() returns appropriate list.", {
 
     results <- itemMissing(records151, form151)
     expect_true(is.list(results))
-    expect_true(names(results) == c("Deaths", "Items"))
+    expect_true(names(results)[1] == "Deaths")
+    expect_true(names(results)[2] == "Items")
     match_items_cols <- names(results$Items) %in%
         c("type", "name", "label..English", "relevant",
           "required", "n_asked", "n_ref", "n_dk", "n_miss")

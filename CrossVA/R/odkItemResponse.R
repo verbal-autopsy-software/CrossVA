@@ -297,7 +297,7 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
 
     ## devtools::test_file("../tests/testthat/test-item-response.R")
     # That's all folks!
-    results <- list(Deaths <- DEATHS,
-                    Items <- ITEMS)
+    results <- list(Deaths = DEATHS,
+                    Items = ITEMS)
     return (results)
 }
