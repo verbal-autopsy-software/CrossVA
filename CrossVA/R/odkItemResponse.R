@@ -272,27 +272,32 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
         ## create a new function for this that goes through integer types and searchs the
         ## constraint (hint as well?)
         DEATHS_index <- match(responses$item_response_ID, DEATHS$ID)
-        DEATHS[DEATHS_index, "n_items"] <- DEATHS[DEATHS_index, "n_items"] + 1
-        DEATHS[DEATHS_index, "n_ref"] <- DEATHS[DEATHS_index, "n_ref"] +
-            as.numeric(tolower(responses[, death_fnames[i]]) == "ref")
-        DEATHS[DEATHS_index, "n_dk"] <- DEATHS[DEATHS_index, "n_dk"] +
-            as.numeric(tolower(responses[, death_fnames[i]]) == "dk")
-        DEATHS[DEATHS_index, "n_miss"] <- DEATHS[DEATHS_index, "n_miss"] +
-            as.numeric(
-                tolower(responses[, death_fnames[i]]) == "" |
-                is.na(responses[, death_fnames[i]])
-            )
-        
+        if (is.charachter(responses[, death_fnames[i]])) {
+            DEATHS[DEATHS_index, "n_items"] <- DEATHS[DEATHS_index, "n_items"] + 1
+            DEATHS[DEATHS_index, "n_ref"] <- DEATHS[DEATHS_index, "n_ref"] +
+                as.numeric(tolower(responses[, death_fnames[i]]) == "ref")
+            DEATHS[DEATHS_index, "n_dk"] <- DEATHS[DEATHS_index, "n_dk"] +
+                as.numeric(tolower(responses[, death_fnames[i]]) == "dk")
+            DEATHS[DEATHS_index, "n_miss"] <- DEATHS[DEATHS_index, "n_miss"] +
+                as.numeric(
+                    tolower(responses[, death_fnames[i]]) == "" |
+                    is.na(responses[, death_fnames[i]])
+                )
+        }
+        ## for numeric (skip calculate?); for integer, looks like they are almost all 99 for don't know
+        ## and 88 for refused.  Birth weight uses 9999 and 8888.
         # fill in ITEMS
-        names(ITEMS)
-        ITEMS[index_form, "n_asked"] <- ITEMS[index_form, "n_asked"] + 1
-        ITEMS[index_form, "n_ref"] <- ITEMS[index_form, "n_ref"] +
-            sum(tolower(responses[, death_fnames[i]]) == "ref")
-        ITEMS[index_form, "n_dk"] <- ITEMS[index_form, "n_dk"] +
-            sum(tolower(responses[, death_fnames[i]]) == "dk")
-        ITEMS[index_form, "n_miss"] <- ITEMS[index_form, "n_miss"] +
-            sum(tolower(responses[, death_fnames[i]]) == "" |
-                is.na(responses[, death_fnames[i]]))
+        if (is.charachter(responses[, death_fnames[i]])) {
+            ITEMS[index_form, "n_asked"] <- ITEMS[index_form, "n_asked"] +
+                nrow(responses)
+            ITEMS[index_form, "n_ref"] <- ITEMS[index_form, "n_ref"] +
+                sum(tolower(responses[, death_fnames[i]]) == "ref")
+            ITEMS[index_form, "n_dk"] <- ITEMS[index_form, "n_dk"] +
+                sum(tolower(responses[, death_fnames[i]]) == "dk")
+            ITEMS[index_form, "n_miss"] <- ITEMS[index_form, "n_miss"] +
+                sum(tolower(responses[, death_fnames[i]]) == "" |
+                    is.na(responses[, death_fnames[i]]))
+        }
     }
 
     ## devtools::test_file("../tests/testthat/test-item-response.R")
