@@ -250,6 +250,7 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
         index_form <- which(clean_form$name == death_fnames[i])
 
         if (length(index_form) == 0) next
+        if (clean_form$type[index_form] == "calculate") next
         
         depends <- strsplit(clean_form$item_group[index_form], "\\.")
         depends <- unlist(depends)
@@ -258,7 +259,8 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
         if (all(depends_relevant == "")) {
             responses <- odk_data
         } else {
-            translated_relevant <- vapply(depends_relevant, translate,
+            translated_relevant <- vapply(depends_relevant,
+                                          translate,
                                           FUN.VALUE = character(1),
                                           USE.NAMES = FALSE)
             translated_relevant <- translated_relevant[!(translated_relevant == "")]
@@ -268,16 +270,28 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
         }
 
         # fill in DEATHS
-        ## need to check for missing values for integer types (e.g., 99 = don't know, 98 = refuse)
-        ## create a new function for this that goes through integer types and searchs the
-        ## constraint (hint as well?)
+        ## what if type == integer is in relevant?  Only found: id10309 (has string-length)
+        value_ref <- "ref"
+        value_dk <- "dk"
+        if (clean_form$type[index_form] == "integer") {
+            value_ref <- 88
+            value_dk <- 99
+            
+        }
+        if (tolower(clean_form$name[index_form]) == "id10366") {
+            ## special case: weight in grammes of the deceased at birth
+            value_ref <- 8888
+            value_dk <- 9999
+            
+        }
+
         DEATHS_index <- match(responses$item_response_ID, DEATHS$ID)
-        if (is.charachter(responses[, death_fnames[i]])) {
+        if (is.character(responses[, death_fnames[i]])) {
             DEATHS[DEATHS_index, "n_items"] <- DEATHS[DEATHS_index, "n_items"] + 1
             DEATHS[DEATHS_index, "n_ref"] <- DEATHS[DEATHS_index, "n_ref"] +
-                as.numeric(tolower(responses[, death_fnames[i]]) == "ref")
+                as.numeric(tolower(responses[, death_fnames[i]]) == value_ref)
             DEATHS[DEATHS_index, "n_dk"] <- DEATHS[DEATHS_index, "n_dk"] +
-                as.numeric(tolower(responses[, death_fnames[i]]) == "dk")
+                as.numeric(tolower(responses[, death_fnames[i]]) == value_dk)
             DEATHS[DEATHS_index, "n_miss"] <- DEATHS[DEATHS_index, "n_miss"] +
                 as.numeric(
                     tolower(responses[, death_fnames[i]]) == "" |
@@ -287,13 +301,13 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
         ## for numeric (skip calculate?); for integer, looks like they are almost all 99 for don't know
         ## and 88 for refused.  Birth weight uses 9999 and 8888.
         # fill in ITEMS
-        if (is.charachter(responses[, death_fnames[i]])) {
+        if (is.character(responses[, death_fnames[i]])) {
             ITEMS[index_form, "n_asked"] <- ITEMS[index_form, "n_asked"] +
                 nrow(responses)
             ITEMS[index_form, "n_ref"] <- ITEMS[index_form, "n_ref"] +
-                sum(tolower(responses[, death_fnames[i]]) == "ref")
+                sum(tolower(responses[, death_fnames[i]]) == value_ref)
             ITEMS[index_form, "n_dk"] <- ITEMS[index_form, "n_dk"] +
-                sum(tolower(responses[, death_fnames[i]]) == "dk")
+                sum(tolower(responses[, death_fnames[i]]) == value_dk)
             ITEMS[index_form, "n_miss"] <- ITEMS[index_form, "n_miss"] +
                 sum(tolower(responses[, death_fnames[i]]) == "" |
                     is.na(responses[, death_fnames[i]]))
