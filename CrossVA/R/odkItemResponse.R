@@ -162,6 +162,7 @@ itemHierarchy <- function (odk_form) {
     return (new_form)
 }
 
+
 #' Calculate item missingness.
 #'
 #' \code{itemMissing} 
@@ -210,6 +211,7 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
     ## set up input data
     split_names <- strsplit(names(odk_data), "\\.")
     death_fnames <- unlist(lapply(split_names, function (x) x[length(x)]))
+    death_fnames <- tolower(death_fnames)
     ## names(odk_data) <- death_fnames
     new_odk_form <- itemHierarchy(odk_form)
     clean_form <- new_odk_form[new_odk_form$name != "",]
@@ -223,6 +225,8 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
                              n_ref = rep(0, n_deaths),
                              n_dk = rep(0, n_deaths),
                              n_miss = rep(0, n_deaths),
+                             n_yes = rep(0, n_deaths),
+                             n_no = rep(0, n_deaths),
                              stringsAsFactors = FALSE)
     } else {
         ## message("Did not find id_col, so assigning row numbers for IDs.",
@@ -231,7 +235,10 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
                              n_items = rep(0, n_deaths),
                              n_ref = rep(0, n_deaths),
                              n_dk = rep(0, n_deaths),
-                             n_miss = rep(0, n_deaths))
+                             n_miss = rep(0, n_deaths),
+                             n_yes = rep(0, n_deaths),
+                             n_no = rep(0, n_deaths)
+                             )
     }
 
     ITEMS <- clean_form[, c('type', 'name', 'label..English', 'relevant', 'required')]
@@ -239,18 +246,20 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
     ITEMS$n_ref <- rep(0, nrow(clean_form))
     ITEMS$n_dk <- rep(0, nrow(clean_form))
     ITEMS$n_miss <- rep(0, nrow(clean_form))
+    ITEMS$n_yes <- rep(0, nrow(clean_form))
+    ITEMS$n_no <- rep(0, nrow(clean_form))
 
-    ## warning message about which fields are in data, but not in form
+    ## include warning message about which fields are in data, but not in form
     ## and vice versa.
 
-    names(odk_data) <- death_fnames
+    names(odk_data) <- tolower(death_fnames)
     odk_data$item_response_ID <- DEATHS$ID
     for (i in 1:ncol(odk_data)) {
 
-        index_form <- which(clean_form$name == death_fnames[i])
+        index_form <- which(tolower(clean_form$name) == tolower(death_fnames[i]))
 
         if (length(index_form) == 0) next
-        if (clean_form$type[index_form] == "calculate") next
+        #if (clean_form$type[index_form] == "calculate") next
         
         depends <- strsplit(clean_form$item_group[index_form], "\\.")
         depends <- unlist(depends)
@@ -266,7 +275,7 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
             translated_relevant <- translated_relevant[!(translated_relevant == "")]
             combined_relevant <- paste0("(", translated_relevant, ")", collapse = " & ")
             combined_relevant <- gsub("death\\$", "odk_data\\$", combined_relevant)
-            responses <- eval(parse(text = paste0("subset(odk_data,", combined_relevant, ")")))
+            responses <- eval(parse(text = paste0("subset(odk_data,", tolower(combined_relevant), ")")))
         }
 
         # fill in DEATHS
@@ -276,13 +285,11 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
         if (clean_form$type[index_form] == "integer") {
             value_ref <- 88
             value_dk <- 99
-            
         }
         if (tolower(clean_form$name[index_form]) == "id10366") {
             ## special case: weight in grammes of the deceased at birth
             value_ref <- 8888
             value_dk <- 9999
-            
         }
 
         DEATHS_index <- match(responses$item_response_ID, DEATHS$ID)
@@ -297,6 +304,10 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
                     tolower(responses[, death_fnames[i]]) == "" |
                     is.na(responses[, death_fnames[i]])
                 )
+            DEATHS[DEATHS_index, "n_yes"] <- DEATHS[DEATHS_index, "n_yes"] +
+                as.numeric(tolower(responses[, death_fnames[i]]) == "yes")
+            DEATHS[DEATHS_index, "n_no"] <- DEATHS[DEATHS_index, "n_no"] +
+                as.numeric(tolower(responses[, death_fnames[i]]) == "no")
         }
         ## for numeric (skip calculate?); for integer, looks like they are almost all 99 for don't know
         ## and 88 for refused.  Birth weight uses 9999 and 8888.
@@ -311,6 +322,10 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
             ITEMS[index_form, "n_miss"] <- ITEMS[index_form, "n_miss"] +
                 sum(tolower(responses[, death_fnames[i]]) == "" |
                     is.na(responses[, death_fnames[i]]))
+            ITEMS[index_form, "n_yes"] <- ITEMS[index_form, "n_yes"] +
+                sum(tolower(responses[, death_fnames[i]]) == "yes")
+            ITEMS[index_form, "n_no"] <- ITEMS[index_form, "n_no"] +
+                sum(tolower(responses[, death_fnames[i]]) == "no")
         }
     }
 
