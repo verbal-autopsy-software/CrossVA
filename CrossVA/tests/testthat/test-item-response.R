@@ -106,8 +106,8 @@ test_that("Test itemMissing() returns appropriate list.", {
     expect_true(names(results)[2] == "Items")
     match_items_cols <- names(results$Items) %in%
         c("type", "name", "label..English", "relevant",
-          "required", "n_asked", "n_ref", "n_dk", "n_miss", "n_yes", "n_no")
-    expect_true(sum(match_items_cols) == 11)
+          "required", "n_asked", "n_ref", "n_dk", "n_miss", "n_yes", "n_no", "var", "entropy")
+    expect_true(sum(match_items_cols) == 13)
     match_deaths_cols <- names(results$Deaths) %in%
         c("ID", "n_items", "n_ref", "n_dk", "n_miss", "n_yes", "n_no")
     expect_true(sum(match_deaths_cols) == 7)

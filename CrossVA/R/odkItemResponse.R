@@ -248,6 +248,8 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
     ITEMS$n_miss <- rep(0, nrow(clean_form))
     ITEMS$n_yes <- rep(0, nrow(clean_form))
     ITEMS$n_no <- rep(0, nrow(clean_form))
+    ITEMS$var <- rep(0, nrow(clean_form))
+    ITEMS$entropy <- rep(0, nrow(clean_form))
 
     ## include warning message about which fields are in data, but not in form
     ## and vice versa.
@@ -293,7 +295,7 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
         }
 
         DEATHS_index <- match(responses$item_response_ID, DEATHS$ID)
-        if (is.character(responses[, death_fnames[i]])) {
+#        if (is.character(responses[, death_fnames[i]])) {
             DEATHS[DEATHS_index, "n_items"] <- DEATHS[DEATHS_index, "n_items"] + 1
             DEATHS[DEATHS_index, "n_ref"] <- DEATHS[DEATHS_index, "n_ref"] +
                 as.numeric(tolower(responses[, death_fnames[i]]) == value_ref)
@@ -308,25 +310,29 @@ itemMissing <- function(odk_data, odk_form, id_col = "meta.instanceID") {
                 as.numeric(tolower(responses[, death_fnames[i]]) == "yes")
             DEATHS[DEATHS_index, "n_no"] <- DEATHS[DEATHS_index, "n_no"] +
                 as.numeric(tolower(responses[, death_fnames[i]]) == "no")
-        }
+ #       }
         ## for numeric (skip calculate?); for integer, looks like they are almost all 99 for don't know
         ## and 88 for refused.  Birth weight uses 9999 and 8888.
         # fill in ITEMS
-        if (is.character(responses[, death_fnames[i]])) {
+#        if (is.character(responses[, death_fnames[i]]) ) {
             ITEMS[index_form, "n_asked"] <- ITEMS[index_form, "n_asked"] +
                 nrow(responses)
             ITEMS[index_form, "n_ref"] <- ITEMS[index_form, "n_ref"] +
-                sum(tolower(responses[, death_fnames[i]]) == value_ref)
+                sum(tolower(responses[, death_fnames[i]]) == value_ref, na.rm = TRUE)
             ITEMS[index_form, "n_dk"] <- ITEMS[index_form, "n_dk"] +
-                sum(tolower(responses[, death_fnames[i]]) == value_dk)
+                sum(tolower(responses[, death_fnames[i]]) == value_dk, na.rm = TRUE)
             ITEMS[index_form, "n_miss"] <- ITEMS[index_form, "n_miss"] +
                 sum(tolower(responses[, death_fnames[i]]) == "" |
                     is.na(responses[, death_fnames[i]]))
             ITEMS[index_form, "n_yes"] <- ITEMS[index_form, "n_yes"] +
-                sum(tolower(responses[, death_fnames[i]]) == "yes")
+                sum(tolower(responses[, death_fnames[i]]) == "yes", na.rm = TRUE)
             ITEMS[index_form, "n_no"] <- ITEMS[index_form, "n_no"] +
-                sum(tolower(responses[, death_fnames[i]]) == "no")
-        }
+                sum(tolower(responses[, death_fnames[i]]) == "no", na.rm = TRUE)
+            tab <- table(responses[, death_fnames[i]])
+            ptab <- tab/sum(tab)
+            ITEMS[index_form, "var"] <- var(ptab, na.rm = TRUE)
+            ITEMS[index_form, "entropy"] <- -1*sum(ptab*log(ptab))
+#        }
     }
 
     ## devtools::test_file("../tests/testthat/test-item-response.R")
