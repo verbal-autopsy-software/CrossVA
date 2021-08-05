@@ -9,17 +9,17 @@ Description: Enables transformation of Verbal Autopsy data collected with the WH
 License: GPL-3
 Depends: R (>= 3.2.0)
 LazyData: TRUE
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Imports: stringi
-Packaged: 2020-06-18 17:52:26 UTC
+Packaged: 2021-07-20 17:52:26 UTC
 Authors@R: c(
-  person("Peter", "Byass", role = "aut"),
-  person("Eungang", "Choi", role = "aut"),
-  person("Sam", "Clark", role = "aut"),
-  person("Zehang", "Li", role = "aut"),
+  person("Jason", "Thomas", email = "jarathomas@gmail.com", role = c("aut", "cre")),
   person("Nicolas", "Maire", role = "aut"),
+  person("Eungang", "Choi", role = "aut"),
+  person("Zehang", "Li", role = "aut"),
   person("Tyler", "McCormick", role = "aut"),
-  person("Jason", "Thomas", email = "jarathomas@gmail.com", role = c("aut", "cre"))
+  person("Peter", "Byass", role = "aut"),
+  person("Sam", "Clark", role = "aut")
   )
 Encoding: UTF-8
 Suggests: 

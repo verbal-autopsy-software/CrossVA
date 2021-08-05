@@ -1,8 +1,11 @@
 #' Map VA records (version 1.5.1) to InterVA5 & InSilico (with option data.type = "WHO2016").
 #'
 #' \code{odk2openVA_v151} transforms data collected with the 2016 WHO VA
-#'   instrument (version 1.5.1) to serve as the input for the InterVA5
-#'   and InSilicoVA alogrithms for coding cause of death.
+#' instrument (version 1.5.1) to serve as the input for the InterVA5
+#' and InSilicoVA alogrithms for coding cause of death.  Note: versions
+#' 1.5.2 and 1.5.2 do not include changes that require modification for
+#' the data preparation, so the code for version 1.5.1 should also work
+#' for these later two versions.
 #'
 #' @param odk A dataframe, obtained from reading an ODK Briefcase
 #'   export of records collected with the WHO questionnaire.
@@ -389,12 +392,25 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
            ageNeonate< 28 & ageNeonate>=7, 15] <- "y"
 
     # Finish coding age (5-15) -- if only one age has "y", recode all others to "n"
+    
+    ## first for neonates: make neonate codes consistent: i022g (11) with i022h-i022k (12-15)
+    i022h_k_has_yes <- apply(iv5Out, 1, function (x) {any(x[12:15] == "y")})
+    iv5Out[i022h_k_has_yes, 11] <- "y"
+    neoIndexData6 <- iv5Out[ , 12:15] != "y" ## identify elements in age columns that do not equal "y"
+    neoIndexData7 <- rowSums(iv5Out[ , 12:15] == "y", na.rm = TRUE)
+    #### Now recode all "n"
+    iv5Out[neoIndexData7 == 1, 12:15][ neoIndexData6[neoIndexData7 == 1, ] ] <- "n"
+
+    ## now for Adults and children
     ## e.g., if age 65 == "y", then age 50-64 == "n" and age 15-49 == "n" etc.
-    indexData6 <-iv5Out[ , 5:15] != "y"            ## identify elements in age columns that do not equal "y"
+    indexData6 <- iv5Out[ , 5:11] != "y"            ## identify elements in age columns that do not equal "y"
     ##indexData7 <- rowSums(iv5Out[ , 5:15] == "y")  ## identify with rows/records only have 1 "y" for all age columns
-    indexData7 <- rowSums(iv5Out[ , 5:15] == "y", na.rm = TRUE)
+    indexData7 <- rowSums(iv5Out[ , 5:11] == "y", na.rm = TRUE)
     ## Now recode all "n"
-    iv5Out[indexData7 == 1, 5:15][ indexData6[indexData7 == 1, ] ] <- "n"
+    iv5Out[indexData7 == 1, 5:11][ indexData6[indexData7 == 1, ] ] <- "n"
+    ## Extend "n" to neonates sub-categories (if not a neonate)
+    indexData8 <- iv5Out[ , 11] == "n"
+    iv5Out[indexData8, 12:15] <- "n"
 
     #16) Was she a woman aged 12-19 years at death? f-19
     iv5Out[ , 16] <- ifelse(odk[ , indexData_sex]=="female" &
@@ -473,10 +489,10 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
     #75) Did the fever last less than a week before death? fev <1w
     indexData <- which(stri_endswith_fixed(odkNames, whoNames[74]))
     indexData_days <- which(stri_endswith_fixed(odkNames, whoNames[75]))
-    iv5Out[odk[ , indexData_days]=="yes" & odk[ , indexData_days]< 7, 75] <- "y"
-    iv5Out[odk[ , indexData_days]=="yes" & odk[ , indexData_days]>=7, 75] <- "n"
-    iv5Out[odk[ , indexData_days]=="yes" & odk[ , indexData_days]==99, 75] <- "."
-    iv5Out[odk[ , indexData_days]=="yes" & odk[ , indexData_days]==88, 75] <- "."
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days]< 7, 75] <- "y"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days]>=7, 75] <- "n"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days]==99, 75] <- "."
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_days]==88, 75] <- "."
     iv5Out[odk[ , indexData]=="no", 75] <- "n"
 
     #76) Did the fever last at least one week, but less than 2 weeks before death? fev 1-2w
@@ -491,6 +507,9 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
     iv5Out[odk[ , indexData_days]>= 14, 77] <- "y"
     iv5Out[odk[ , indexData_days]<  14, 77] <- "n"
     iv5Out[odk[ , indexData]=="no", 77] <- "n"
+
+    #78) Did the fever continue until death? (fill in "n" if filter Id10147 (had fever) is "no"
+    iv5Out[odk[ , indexData]=="no", 78] <- "n"
 
     #79) Was the fever severe? fev sev
     indexData_sev <- which(stri_endswith_fixed(odkNames, whoNames[79]))
@@ -648,43 +667,29 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
     #123) Did (s)he have severe abdominal pain for less than 2 weeks before death? abd p <2w
     ##indexData  <- which(stri_endswith_fixed(odkNames, whoNames[122]))
     indexData  <- which(stri_endswith_fixed(odkNames, "id10195"))
-    indexDatad <- which(stri_endswith_fixed(odkNames, "id10197_a"))
-    indexDatah <- which(stri_endswith_fixed(odkNames, "id10196"))
-    indexDatam <- which(stri_endswith_fixed(odkNames, "id10198"))
-
+    indexDatad <- which(stri_endswith_fixed(odkNames, "id10197"))
     iv5Out[tolower(odk[ , indexData])=="yes" & odk[ , indexDatad]< 14, 123] <- "y"
     iv5Out[tolower(odk[ , indexData])=="yes" & odk[ , indexDatad]>=14, 123] <- "n"
-
-    iv5Out[tolower(odk[ , indexData])=="yes" & odk[ , indexDatah]< (24*14), 123] <- "y"
-    iv5Out[tolower(odk[ , indexData])=="yes" & odk[ , indexDatah]>=(24*14), 123] <- "n"
-
-    iv5Out[tolower(odk[ , indexData])=="yes" & odk[ , indexDatam]< 1, 123] <- "y"
     iv5Out[tolower(odk[ , indexData])=="no", 123] <- "n"
 
     #124) Did (s)he have severe abdominal pain for at least 2 weeks before death? abd p 2+w
     iv5Out[tolower(odk[ , indexData])=="yes" & odk[ , indexDatad]>=14, 124] <- "y"
     iv5Out[tolower(odk[ , indexData])=="yes" & odk[ , indexDatad]< 14, 124] <- "n"
-
-    iv5Out[tolower(odk[ , indexData])=="yes" & odk[ , indexDatah]>=(24*14), 124] <- "y"
-    iv5Out[tolower(odk[ , indexData])=="yes" & odk[ , indexDatah]< (24*14), 124] <- "n"
-
-    iv5Out[tolower(odk[ , indexData])=="yes" & odk[ , indexDatam]>=1, 124] <- "y"
-
     iv5Out[tolower(odk[ , indexData])=="no", 124] <- "n"
 
     #125) Was the pain in the upper abdomen? abd p up
+    indexData  <- which(stri_endswith_fixed(odkNames, "id10194"))
     indexData_uplow <- which(stri_endswith_fixed(odkNames, whoNames[125]))
     iv5Out[tolower(odk[ , indexData_uplow])=="upper_abdomen",       125] <- "y"
     iv5Out[tolower(odk[ , indexData_uplow])=="upper_lower_abdomen", 125] <- "y"
     iv5Out[tolower(odk[ , indexData_uplow])=="lower_abdomen",       125] <- "n"
-    iv5Out[tolower(odk[ , indexData])=="no", 125] <- "n"
-
+    ## iv5Out[tolower(odk[ , indexData])=="no", 125] <- "n"
 
     #126) Was the pain in the lower abdomen? abd p lo
     iv5Out[tolower(odk[ , indexData_uplow])=="upper_abdomen",       126] <- "n"
     iv5Out[tolower(odk[ , indexData_uplow])=="upper_lower_abdomen", 126] <- "y"
     iv5Out[tolower(odk[ , indexData_uplow])=="lower_abdomen",       126] <- "y"
-    iv5Out[tolower(odk[ , indexData])=="no", 126] <- "n"
+    ## iv5Out[tolower(odk[ , indexData])=="no", 126] <- "n"
 
 
     #128) Did (s)he have a more than usually protruding abdomen for less than 2 weeks before death? abd pr <2w
@@ -745,6 +750,7 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
     iv5Out[tolower(odk[ , indexData])=="no",                          137] <- "n"
 
     #139) Did (s)he have a painful neck for at least one week before death? pa n 1+w
+    indexData  <- which(stri_endswith_fixed(odkNames, "id10210"))
     indexDatad <- which(stri_endswith_fixed(odkNames, whoNames[139]))
     iv5Out[tolower(odk[ , indexData])=="yes" & odk[ , indexDatad]>=7, 139] <- "y"
     iv5Out[tolower(odk[ , indexData])=="yes" & odk[ , indexDatad]< 7, 139] <- "n"
@@ -767,9 +773,10 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
     #144) Was (s)he unsconscious for at least 6 hours before death?	unc 6+h
     indexData <- which(stri_endswith_fixed(odkNames, whoNames[143]))
     indexData_hours <- which(stri_endswith_fixed(odkNames, whoNames[144]))
-    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_hours]>=6, 144] <- "y"
-    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_hours]< 6, 144] <- "n"
-    iv5Out[odk[ , indexData]=="no", 144] <- "n"
+    iv5Out[odk[ , indexData]=="yes", 144] <- "y"
+    iv5Out[odk[ , indexData]=="no" & odk[ , indexData_hours]>= 6, 144] <- "y"
+    iv5Out[odk[ , indexData]=="no" & odk[ , indexData_hours]< 6, 144] <- "n"
+    iv5Out[odk[ , indexData_uncon]=="no", 144] <- "n"
 
     #149) Did the convulsions last for less than 10 minutes?	conv <10m
     indexData <- which(stri_endswith_fixed(odkNames, whoNames[147]))
@@ -780,8 +787,8 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
     iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_min]==88, 149] <- "."
 
     #150) Did the convulsions last for at least 10 minutes?	conv 10+m
-    iv5Out[odk[ , indexData]< 10, 150] <- "n"
-    iv5Out[odk[ , indexData]>=10, 150] <- "y"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_min]< 10, 150] <- "n"
+    iv5Out[odk[ , indexData]=="yes" & odk[ , indexData_min]>=10, 150] <- "y"
 
     #161) Did the ulcer ooze pus for at least 2 weeks?	sk ul 2+w
     indexData <- which(stri_endswith_fixed(odkNames, whoNames[161]))
@@ -970,14 +977,15 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
     iv5Out[tolower(odk[ , indexData])=="during_delivery" , 283] <- "y"
 
     #284) Did the child's mother die in the baby's first year of life?	moth d y1
-    indexDatam <- which(stri_endswith_fixed(odkNames, whoNames[284]))
-    indexDatad <- which(stri_endswith_fixed(odkNames, "id10359"))
-    nMonths <- odk[ , indexDatam]
-    nDays   <- odk[ , indexDatad]
-    nMonths[is.na(nMonths) & !is.na(nDays)] <- 0
-    nDays[is.na(nDays) & !is.na(nMonths)] <- 0
-    iv5Out[nMonths + nDays/30.4 <=12, 284] <- "y"
-    iv5Out[nMonths + nDays/30.4 > 12, 284] <- "n"
+    indexDataM <- which(stri_endswith_fixed(odkNames, whoNames[284]))
+    indexDataD <- which(stri_endswith_fixed(odkNames, "id10359"))
+    nMonths <- odk[ , indexDataM]
+    nDays   <- odk[ , indexDataD]
+    nMonths[is.na(odk[ , indexDataM]) & !is.na(odk[ , indexDataD])] <- 0
+    nDays[is.na(odk[ , indexDataD]) & !is.na(odk[ , indexDataM])] <- 0
+    naMonthsAndDays <- is.na(odk[ , indexDataM]) & is.na(odk[ , indexDataD])
+    iv5Out[nMonths + nDays/30.4 <=12 & !naMonthsAndDays, 284] <- "y"
+    iv5Out[nMonths + nDays/30.4 > 12 & !naMonthsAndDays, 284] <- "n"
 
     #285) Was the baby born in a health facility or clinic?	born fac
     indexData <- which(stri_endswith_fixed(odkNames, whoNames[285]))
