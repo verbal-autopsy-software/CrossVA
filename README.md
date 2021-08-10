@@ -1,4 +1,4 @@
-# CrossVA  [![Travis-CI Build Status](https://travis-ci.org/verbal-autopsy-software/CrossVA.svg?branch=master)](https://travis-ci.org/verbal-autopsy-software/CrossVA) [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/CrossVA)](https://cran.r-project.org/package=CrossVA)
+# CrossVA  [![Build Status](https://www.travis-ci.com/verbal-autopsy-software/CrossVA.svg?branch=master)](https://www.travis-ci.com/verbal-autopsy-software/CrossVA) [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/CrossVA)](https://cran.r-project.org/package=CrossVA)
 
 
 ## **Description** 	
