@@ -984,8 +984,8 @@ odk2openVA_v151 <- function (odk, id_col = "meta.instanceID") {
     nMonths[is.na(odk[ , indexDataM]) & !is.na(odk[ , indexDataD])] <- 0
     nDays[is.na(odk[ , indexDataD]) & !is.na(odk[ , indexDataM])] <- 0
     naMonthsAndDays <- is.na(odk[ , indexDataM]) & is.na(odk[ , indexDataD])
-    iv5Out[nMonths + nDays/30.4 <=12 & !naMonthsAndDays, 284] <- "y"
-    iv5Out[nMonths + nDays/30.4 > 12 & !naMonthsAndDays, 284] <- "n"
+    iv5Out[!naMonthsAndDays & (nMonths + nDays/30.4) <=12, 284] <- "y"
+    iv5Out[!naMonthsAndDays & (nMonths + nDays/30.4) > 12, 284] <- "n"
 
     #285) Was the baby born in a health facility or clinic?	born fac
     indexData <- which(stri_endswith_fixed(odkNames, whoNames[285]))
