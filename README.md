@@ -1,4 +1,17 @@
-# CrossVA  [![Build Status](https://www.travis-ci.com/verbal-autopsy-software/CrossVA.svg?branch=master)](https://www.travis-ci.com/verbal-autopsy-software/CrossVA) [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/CrossVA)](https://cran.r-project.org/package=CrossVA)
+# CrossVA
+
+<!--- [![Build Status](https://www.travis-ci.com/verbal-autopsy-software/CrossVA.svg?branch=master)](https://www.travis-ci.com/verbal-autopsy-software/CrossVA) [![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/CrossVA)](https://cran.r-project.org/package=CrossVA)
+--->
+
+**NOT MAINTAINED -- At this time we do not have the resources to actively maintain this software.** 
+
+<br><br>
+
+We are actively maintaining research-oriented software that supports
+our publications, but we are not able to support user-facing packages, modules,
+or applications.**
+
+
 
 
 ## **Description** 	
