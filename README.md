@@ -9,7 +9,7 @@
 
 We are actively maintaining research-oriented software that supports
 our publications, but we are not able to support user-facing packages, modules,
-or applications.**
+or applications.
 
 ## **Description** 	
 
