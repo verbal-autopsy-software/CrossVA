@@ -366,7 +366,8 @@ odk2openVA_v141 <- function (odk, id_col = "meta.instanceID") {
     iv5Out[odk[ , indexData1y]<  5 & odk[ , indexData1y]>=1, 9] <- "y"
     iv5Out[is.na(odk[ , indexData1y]) & odk[ , indexData2]=="child" &
            odk[ , indexData4]=="days" & odk[ , indexData4d]< 5*365.25 &
-           odk[ , indexData4d]>=1*365.25, 9] <- "y"
+           odk[ , indexData4d]>=1*365, 9] <- "y"
+           ## odk[ , indexData4d]>=1*365.25, 9] <- "y"
     iv5Out[is.na(odk[ , indexData1y]) & odk[ , indexData2]=="child" &
            odk[ , indexData4]=="months" & odk[ , indexData4m]< 5*12 &
            odk[ , indexData4m]>=1*12, 9] <- "y"
@@ -377,7 +378,8 @@ odk2openVA_v141 <- function (odk, id_col = "meta.instanceID") {
     #10) Was s(he) aged 1 to 11 months at death? 1-11 months (child or neonate?)
     iv5Out[odk[ , indexData1d]< 365.25 & odk[ , indexData1d]>=28, 10] <- "y"
     iv5Out[is.na(odk[ , indexData1d]) & odk[ , indexData2]=="child" &
-           odk[ , indexData4]=="days" & odk[ , indexData4d]< 365.25 &
+           odk[ , indexData4]=="days" & odk[ , indexData4d]< 365 &
+           ## odk[ , indexData4]=="days" & odk[ , indexData4d]< 365.25 &
            odk[ , indexData4d]>=28, 10] <- "y"
 
     #11) Was s(he) aged < 1 month (28 days) at death? 0 - 27 days (neonate)
@@ -987,9 +989,8 @@ odk2openVA_v141 <- function (odk, id_col = "meta.instanceID") {
     nMonths[is.na(odk[ , indexDataM]) & !is.na(odk[ , indexDataD])] <- 0
     nDays[is.na(odk[ , indexDataD]) & !is.na(odk[ , indexDataM])] <- 0
     naMonthsAndDays <- is.na(odk[ , indexDataM]) & is.na(odk[ , indexDataD])
-    iv5Out[nMonths + nDays/30.4 <=12 & !naMonthsAndDays, 284] <- "y"
-    iv5Out[nMonths + nDays/30.4 > 12 & !naMonthsAndDays, 284] <- "n"
-
+    iv5Out[!naMonthsAndDays & (nMonths + nDays/30.4) <=12, 284] <- "y"
+    iv5Out[!naMonthsAndDays & (nMonths + nDays/30.4) > 12, 284] <- "n"
 
     #285) Was the baby born in a health facility or clinic?	born fac
     indexData <- which(stri_endswith_fixed(odkNames, whoNames[285]))
